@@ -1,0 +1,150 @@
+# Project-Name: seats booking backend
+
+Every time you choose to apply a rule(s), explicitly state the rule(s) in the output. You can abbreviate the rule description to a single word or phrase.
+
+## Project Objective:
+
+Develop a RESTful backend in Node.js for the efficient management of seat reservations within a library. The application aims to provide a centralized system for users to book study seats and for the library administration to manage availability and reservations.
+
+* **Core Modules**
+
+*    **Users**: Management of library users, including registration, authentication, and profile management.
+*    **Seats**: Management of available seats, with features to define seat properties and display their availability.
+*    **Reservations**: Management of the reservation workflow, allowing users to book seats, view their reservations, and cancel them.
+
+## Code Style and Structure
+
+**Code Style:**
+
+*   **Language:**  TypeScript for backend logic.
+*   **Conventions:**  Adhere to standard Node.js and TypeScript best practices (e.g., Airbnb JavaScript Style Guide as a reference).
+*   **Naming:**
+    *   Use descriptive and meaningful names for variables, functions, and modules.
+    *   Follow camelCase for variables and functions, PascalCase for classes and components.
+    *   Be consistent with naming conventions throughout the project.
+*   **Software Engineering Principles:**
+    *   **Modularity:**  Break down the application into small, independent modules.
+    *   **Separation of Concerns:**  Separate different layers of the application (e.g., controllers, services, data access).
+    *   **DRY (Don't Repeat Yourself):**  Avoid code duplication by creating reusable functions and components.
+    *   **KISS (Keep It Simple, Stupid):**  Favor simplicity and clarity in code.
+    *   **Error Handling:** Implement robust error handling throughout the application.
+    *   **Asynchronous Programming:**  Utilize async/await for handling asynchronous operations in Node.js.
+*   **Code Formatting:**  Use Prettier for consistent code formatting.
+*   **Linting:**  Use ESLint with recommended configurations and TypeScript ESLint plugins to catch potential code quality issues and enforce style guidelines.
+
+**Code Structure:**
+server/
+├── src/
+│ ├── controllers/ # Handles HTTP requests and responses
+│ ├── services/ # Business logic and data processing
+│ ├── models/ # Data models and database interactions (ORM/ODM)
+│ ├── routes/ # API endpoint definitions
+│ ├── config/ # Configuration files (database, server, etc.)
+│ ├── middlewares/ # Custom middleware functions
+│ ├── utils/ # Utility functions and helpers
+│ ├── types/ # TypeScript type definitions (if using TypeScript)
+│ ├── database/ # Database connection and setup
+│ ├── app.ts # Main application setup (Express app)
+│ └── server.ts # Entry point to start the server
+├── package.json
+├── package-lock.json
+└── README.md
+
+## Tech Stack
+
+
+*   **Backend Framework:** Node.js with Express.js for building the RESTful API.
+*   **Language:** TypeScript for backend logic to ensure type safety and improve code maintainability.
+*   **Database:** PostgreSQL for reliable and scalable data storage.
+*   **ORM/ODM:**  Prisma for type-safe database access and management.
+*   **Authentication:** JSON Web Tokens (JWT) for secure user authentication.
+*   **Testing:** Jest and Supertest for unit and integration testing.
+*   **Documentation:** Swagger or OpenAPI for API documentation.
+*   **Linting and Formatting:** ESLint and Prettier for code quality and consistency.
+
+
+
+## Naming Conventions
+
+*    Use lowercase with dashes for directories (e.g., components/form-wizard)
+*    Favor named exports for components and utilities
+*    Use PascalCase for component files (e.g., VisaForm.tsx)
+*    Use camelCase for utility files (e.g., formValidator.ts)
+
+## TypeScript Usage
+
+*    Use TypeScript for all code; prefer interfaces over types
+*    Avoid enums; use const objects with 'as const' assertion
+*    Use functional components with TypeScript interfaces
+*    Define strict types for message passing between different parts of the extension
+*    Use absolute imports for all files @/...
+*    Avoid try/catch blocks unless there's good reason to translate or handle error in that abstraction
+*    Use explicit return types for all functions
+
+## Syntax and Formatting
+
+*    Use "function" keyword for pure functions
+*    Avoid unnecessary curly braces in conditionals
+*    Use declarative JSX
+*    Implement proper TypeScript discriminated unions for message types
+
+## Error Handling
+
+*    Implement proper error boundaries
+*    Log errors appropriately for debugging
+*    Provide user-friendly error messages
+*    Handle network failures gracefully
+
+## Git Usage
+
+* **Commit Message Prefixes:**
+
+  *  "fix:" for bug fixes
+  *  "feat:" for new features
+  *  "perf:" for performance improvements
+  *  "docs:" for documentation changes
+  *  "style:" for formatting changes
+  *  "refactor:" for code refactoring
+  *  "test:" for adding missing tests
+  *  "chore:" for maintenance tasks
+
+* **Rules:**
+
+*    Use lowercase for commit messages
+*    Keep the summary line concise
+*    Include description for non-obvious changes
+*    Reference issue numbers when applicable
+
+## Documentation
+
+*    Maintain clear README with setup instructions
+*    Document API interactions and data flows
+*    Don't include comments unless it's for complex logic
+*    Document permission requirements
+
+## Development Workflow
+
+*    Use proper version control
+*    Implement proper code review process
+*    Test in multiple environments
+*    Follow semantic versioning for releases
+*    Maintain changelog
+
+## Testing
+
+*   **Unit Tests:** Write unit tests for services and utility functions to ensure business logic correctness.
+*   **Integration Tests:** Implement integration tests to verify interactions between different modules like controllers, services, and database.
+*   **API Tests:**  Develop API tests using tools like Supertest to validate API endpoints, request/response structures, and status codes.
+*   **Database Tests:** Include tests to ensure database interactions are correct, focusing on data integrity and query accuracy.
+*   **Performance Tests:** Conduct load testing to evaluate API performance under stress and identify potential bottlenecks.
+
+## Security
+
+*   **Authentication and Authorization:** Implement JWT-based authentication and role-based authorization to secure API endpoints.
+*   **Input Validation:**  Validate all user inputs at the controller level to prevent injection attacks and data integrity issues.
+*   **Data Sanitization:** Sanitize data before storing it in the database to protect against stored XSS or other injection vulnerabilities.
+*   **HTTPS:** Enforce HTTPS for all API communication to encrypt data in transit.
+*   **Rate Limiting:** Apply rate limiting to API endpoints to protect against brute-force attacks and abuse.
+*   **Dependency Security:** Regularly audit and update dependencies to patch known security vulnerabilities.
+
+
