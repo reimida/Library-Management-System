@@ -85,7 +85,6 @@ server/
 
 *    Use "function" keyword for pure functions
 *    Avoid unnecessary curly braces in conditionals
-*    Use declarative JSX
 *    Implement proper TypeScript discriminated unions for message types
 
 ## Error Handling

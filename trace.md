@@ -53,3 +53,17 @@
 *   **refactor:** Adjusted import paths to absolute imports using `@/` in `tsconfig.json`.
 *   **chore:** Configured `outDir` and `rootDir` in `tsconfig.json` for build output.
 *   **fix:** Corrected types and versions for dependencies in `package.json` and `package-lock.json`.
+
+## User Login Feature - Implemented
+
+**Messages:**
+
+*   **feat:** User login endpoint created at `/users/login`.
+*   **feat:** Implemented login input validation using `zod` schemas.
+*   **feat:** Implemented login functionality in `userService` and `userController`.
+*   **feat:** Password comparison using `bcrypt` for login authentication.
+*   **feat:** JWT token generation upon successful login.
+*   **feat:** Included user details and JWT token in login response.
+*   **refactor:** Centralized error handling in `userController` for registration and login.
+*   **refactor:** Removed `UserValidationSchema` and introduced separate schemas in `validations/authSchemas.ts`.
+*   **chore:** Updated dependencies to include `@types/mongoose`.

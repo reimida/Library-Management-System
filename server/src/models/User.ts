@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { z } from 'zod';
 
 // Single source of truth for user fields
 const userFields = {
@@ -12,16 +11,7 @@ const userFields = {
 // Mongoose schema for DB
 const userSchema = new mongoose.Schema(userFields, { timestamps: true });
 
-// Zod schema for validation - derives from the same fields as mongoose
-export const UserValidationSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  name: z.string().min(3),
-  // role is not included since it's set by default
-});
-
 // Types
-export type UserInput = z.infer<typeof UserValidationSchema>;
 export type User = mongoose.InferSchemaType<typeof userSchema>;
 
 // Model

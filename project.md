@@ -75,3 +75,14 @@ Here is an example of how REST APIs could be structured for each module.
 ## Schedules (/schedules - if module implemented):
 - **GET /schedules**: Get library schedules.
 - **PUT /schedules**: Update library schedules (admin/librarian only).
+
+## Tech Stack
+
+*   **Backend Framework:** Node.js with Express.js
+*   **Language:** TypeScript
+*   **Database:** MongoDB
+*   **ORM/ODM:** Mongoose
+*   **Authentication:** JWT
+*   **Testing:** Jest and Supertest
+*   **Documentation:** Swagger or OpenAPI (To be implemented)
+*   **Linting and Formatting:** ESLint and Prettier
