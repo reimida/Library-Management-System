@@ -1,23 +1,27 @@
-import { Request, Response } from "express";
-import { UserSchema } from "../models/User";
-import { createUser } from "../services/userService";
+import { Request, Response } from 'express';
+import { UserValidationSchema } from '../models/User';
+import { z } from 'zod';
+import { registerUser } from '../services/userService';
 
-export async function register(req: Request, res: Response) {
+export const register = async (req: Request, res: Response) => {
   try {
-    // Validate request body
-    const validatedData = UserSchema.omit({ 
-      id: true, 
-      role: true, 
-      createdAt: true, 
-      updatedAt: true 
-    }).parse(req.body);
+    const validatedData = UserValidationSchema.parse(req.body);
+    const user = await registerUser(validatedData);
 
-    const user = await createUser(validatedData);
-    return res.status(201).json(user);
+    console.log("Successfully registered user, sending 201 response..."); // Debug log
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: {
+        email: user.email,
+        name: user.name
+      }
+    });
   } catch (error) {
-    if (error instanceof Error) {
-      return res.status(400).json({ error: error.message });
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ errors: error.errors });
     }
-    return res.status(500).json({ error: "Internal server error" });
+    console.error('Error registering user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-} 
+}; 

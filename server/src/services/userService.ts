@@ -1,18 +1,20 @@
-import { hash } from "bcrypt";
-import { prisma } from "../config/database";
-import { User } from "../models/User";
+import { UserInput } from "../models/User";
+import { createUserInDB } from "../repositories/userRepository";
+import bcrypt from 'bcryptjs'
 
-export async function createUser(userData: Omit<User, "id" | "createdAt" | "updatedAt" | "role">) {
-  const hashedPassword = await hash(userData.password, 10);
-  
-  const user = await prisma.user.create({
-    data: {
-      ...userData,
-      password: hashedPassword,
-    },
-  });
+// Rename to match controller's expected function name
+export async function registerUser(userData: UserInput) {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-  // Don't return password in response
-  const { password: _, ...userWithoutPassword } = user;
+  const userWithHashedPassword = {
+    ...userData,
+    password: hashedPassword,
+  };
+
+  const createdUser = await createUserInDB(userWithHashedPassword);
+
+  // Return user without password
+  const { password: _, ...userWithoutPassword } = createdUser
   return userWithoutPassword;
 } 
