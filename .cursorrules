@@ -42,13 +42,18 @@ server/
 │ ├── config/ # Configuration files (database, server, etc.)
 │ ├── middlewares/ # Custom middleware functions
 │ ├── utils/ # Utility functions and helpers
+| ├── repositories
+| ├── validations/
 │ ├── types/ # TypeScript type definitions (if using TypeScript)
 │ ├── database/ # Database connection and setup
 │ ├── app.ts # Main application setup (Express app)
-│ └── server.ts # Entry point to start the server
-├── package.json
-├── package-lock.json
-└── README.md
+| ├── server.ts
+│
+├──test/
+├──.env
+├──docker-compose.yml
+├──package.json
+ 
 
 ## Tech Stack
 

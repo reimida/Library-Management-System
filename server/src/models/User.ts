@@ -1,18 +1,28 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-// Single source of truth for user fields
-const userFields = {
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  name: { type: String, required: true },
-  role: { type: String, enum: ['USER', 'LIBRARIAN', 'ADMIN'], default: 'USER' }
-} as const;
+// Define the User interface that extends Mongoose Document
+export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId;
+  email: string;
+  password: string;
+  name: string;
+  role: 'USER' | 'LIBRARIAN' | 'ADMIN';
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
-// Mongoose schema for DB
-const userSchema = new mongoose.Schema(userFields, { timestamps: true });
+// Define the User schema
+const UserSchema: Schema = new Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true, lowercase: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ['USER', 'LIBRARIAN', 'ADMIN'], default: 'USER' },
+  },
+  { timestamps: true }
+);
 
-// Types
-export type User = mongoose.InferSchemaType<typeof userSchema>;
+// Create the User model
+const User = mongoose.model<IUser>('User', UserSchema);
 
-// Model
-export const UserModel = mongoose.model<User>('User', userSchema);
+export default User;

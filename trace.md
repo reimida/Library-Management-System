@@ -21,40 +21,7 @@
 *   **feat:** Basic error handling for registration implemented (validation and server errors).
 *   **feat:** Password excluded from registration response for security.
 
-## Refactoring - Repository Layer - Implemented
-
-**Messages:**
-
-*   **refactor:** Introduced a repository layer with `userRepository.ts`.
-*   **refactor:** Moved database interaction logic from `userService.ts` to `userRepository.ts`.
-*   **refactor:** Updated `userService.ts` to use `userRepository.ts` for data access, improving separation of concerns.
-*   **fix:** Corrected database interaction in `userRepository.ts` to use Mongoose instead of Prisma.
-
-## Database Migration - Implemented
-
-**Messages:**
-
-*   **refactor:** Migrated database from Prisma to Mongoose.
-*   **chore:** Updated database configuration to use MongoDB.
-*   **chore:** Removed Prisma related dependencies and added Mongoose.
-*   **feat:** Implemented MongoDB connection in `database.ts`.
-*   **refactor:** Updated User model to use Mongoose schema and types.
-*   **refactor:** Updated repository and service layers to use Mongoose for database interactions.
-
-## Dependency Updates & Configuration - Implemented
-
-**Messages:**
-
-*   **chore:** Updated development dependencies including `@types/node`, `@types/express`, `typescript`, `eslint`, `prettier`.
-*   **chore:** Removed unused dependencies like `@prisma/client`, `prisma`, `bcryptjs` and added `bcryptjs` and `mongoose`.
-*   **chore:** Updated `package.json` scripts for development, build, and start.
-*   **feat:** Added dotenv for environment variable management.
-*   **feat:** Implemented base API route to `/` in `app.ts`.
-*   **refactor:** Adjusted import paths to absolute imports using `@/` in `tsconfig.json`.
-*   **chore:** Configured `outDir` and `rootDir` in `tsconfig.json` for build output.
-*   **fix:** Corrected types and versions for dependencies in `package.json` and `package-lock.json`.
-
-## User Login Feature - Implemented
+## User Authentication Feature - Implemented
 
 **Messages:**
 
@@ -67,3 +34,37 @@
 *   **refactor:** Centralized error handling in `userController` for registration and login.
 *   **refactor:** Removed `UserValidationSchema` and introduced separate schemas in `validations/authSchemas.ts`.
 *   **chore:** Updated dependencies to include `@types/mongoose`.
+
+## User Profile Management Feature - Implemented
+
+**Messages:**
+
+*   **feat:** Implemented `GET /users/profile` endpoint to retrieve user profile.
+*   **feat:** Implemented `PATCH /users/profile` endpoint to update user profile.
+*   **feat:** Added authentication middleware to protect profile endpoints.
+*   **feat:** Implemented input validation for update profile using `zod` schemas (`UpdateProfileSchema`).
+*   **feat:** Implemented `getUserProfile` and `updateUserProfile` in `userService`.
+*   **feat:** Implemented `getUserById` and `updateUser` in `userRepository`.
+*   **refactor:** Updated `userController` to include `getProfile` and `updateProfile` actions.
+*   **refactor:** Updated `userRoutes` to include routes for profile endpoints.
+*   **refactor:** Updated `User` model and `IUser` interface to align with Mongoose schema.
+*   **refactor:** Adjusted service and repository layers to use Mongoose for profile operations.
+
+## Testing - Implemented
+
+### User Authentication
+
+**Messages:**
+
+*   **test:** Added integration tests for user registration endpoint in `register.test.ts`.
+*   **test:** Added integration tests for user login endpoint in `login.test.ts`.
+*   **test:** Added integration tests for getting user profile in `getProfile.test.ts`.
+*   **test:** Added integration tests for updating user profile in `updateProfile.test.ts`.
+*   **test:** Added unit tests for login functionality in `userService.test.ts`.
+
+### Test Infrastructure
+
+**Messages:**
+
+*   **chore:** Added test setup file `setup.ts` for database connection and cleanup.
+*   **chore:** Added `docker-compose.yml` for running tests with a dedicated MongoDB instance.

@@ -1,13 +1,13 @@
-import { UserModel } from "../models/User";
-import { createUserInDB, findUserByEmail } from "../repositories/userRepository";
+import User, { IUser } from '../models/User';
+import { createUserInDB, findUserByEmail, getUserById, updateUser } from "../repositories/userRepository";
 import bcrypt from 'bcryptjs'
 import { generateToken } from '../utils/jwtUtils';
-import type { LoginInput, RegisterInput } from '../validations/authSchemas';
+import type { LoginInput, RegisterInput, UpdateProfileInput } from '../validations/authSchemas';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Should be in env
 
 // Rename to match controller's expected function name
-export async function registerUser(userData: RegisterInput){
+export async function registerUser(userData: RegisterInput): Promise<IUser> {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(userData.password, salt);
 
@@ -17,10 +17,7 @@ export async function registerUser(userData: RegisterInput){
   };
 
   const createdUser = await createUserInDB(userWithHashedPassword);
-
-  // Return user without password
-  const { password: _, ...userWithoutPassword } = createdUser
-  return userWithoutPassword;
+  return createdUser;
 }
 
 type LoginResponse = {
@@ -35,7 +32,7 @@ type LoginResponse = {
 
 export async function loginUser(credentials: LoginInput): Promise<LoginResponse> {
   const user = await findUserByEmail(credentials.email);
-  if (!user) {
+  if (!user || !user.password) {
     throw new Error('Invalid credentials');
   }
 
@@ -48,14 +45,27 @@ export async function loginUser(credentials: LoginInput): Promise<LoginResponse>
   }
 
   const token = generateToken({
-    userId: user._id,
+    userId: user._id.toString(),
     email: user.email,
     role: user.role
   });
 
   const { password: _, ...userWithoutPassword } = user.toObject();
   return { 
-    user: userWithoutPassword, 
+    user: userWithoutPassword as LoginResponse['user'], 
     token 
-  } as LoginResponse;
+  };
+}
+
+export async function getUserProfile(userId: string): Promise<IUser | null> {
+  const user = await getUserById(userId);
+  return user;
+}
+
+export async function updateUserProfile(
+  userId: string,
+  updateData: UpdateProfileInput
+): Promise<IUser | null> {
+  const updatedUser = await updateUser(userId, updateData);
+  return updatedUser;
 } 

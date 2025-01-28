@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { registerUser, loginUser } from '../services/userService';
-import { LoginSchema, RegisterSchema } from '../validations/authSchemas';
+import { registerUser, loginUser, getUserProfile, updateUserProfile } from '../services/userService';
+import { LoginSchema, RegisterSchema, UpdateProfileSchema } from '../validations/authSchemas';
 
 // Common error handler
 function handleControllerError(error: unknown, res: Response) {
@@ -69,6 +69,38 @@ export const login = async (req: Request, res: Response) => {
           name: user.name,
           role: user.role
         }
+      };
+    }
+  );
+};
+
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const profile = await getUserProfile(req.user.userId);
+    return res.json(profile);
+  } catch (error) {
+    handleControllerError(error, res);
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  if (!req.user?.userId) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  return validateAndExecute(
+    req,
+    res,
+    UpdateProfileSchema,
+    async (data) => {
+      const updatedProfile = await updateUserProfile(req.user!.userId, data);
+      return {
+        message: 'Profile updated successfully',
+        user: updatedProfile
       };
     }
   );
