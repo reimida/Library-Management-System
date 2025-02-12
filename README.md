@@ -22,6 +22,7 @@ Develop a RESTful backend in Node.js for the efficient management of seat reserv
 *   [Node.js](https://nodejs.org/) (v20 or higher recommended)
 *   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 *   [MongoDB](https://www.mongodb.com/)
+*   [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) (for testing environment)
 
 ### Installation
 
@@ -104,3 +105,41 @@ json
     ```
 
     You should see a document containing the user's information (excluding the password from the response, but stored hashed in the database).
+
+## Running Tests
+
+This project uses **Jest** for unit testing and **Supertest** for integration testing to ensure the reliability and correctness of the API endpoints and business logic. Supertest is used to test the API endpoints by making actual HTTP requests to the running server.
+
+Before running the tests, ensure Docker and Docker Compose are installed and running on your system.
+
+### 1. Start the Test Environment
+
+The test suite requires a running MongoDB instance. Docker Compose is used to easily set up a dedicated MongoDB environment for testing.
+
+From the `server/` directory, run:
+```bash
+docker-compose up -d
+```
+This command starts the MongoDB service defined in `docker-compose.yml` in detached mode. This MongoDB instance is configured specifically for testing and will not interfere with your local development MongoDB setup.
+
+### 2. Run the Test Suite
+
+Once the Docker environment is up and running, you can execute the test suite using npm:
+```bash
+npm test
+
+This command will run Jest, which will execute all test files located in the `test/` directory. The test suite includes:
+
+*   **Integration Tests:** Located in `test/integration/`, these tests use Supertest to send HTTP requests to the API endpoints and verify the responses. They test the full flow of API requests, including controllers, services, and database interactions. Examples include testing user registration, login, and profile management.
+*   **Unit Tests:** Located in `test/unit/`, these tests focus on testing individual functions or modules in isolation, such as services and utility functions.
+
+### 3. Stop the Test Environment (Optional)
+
+After running tests, you can stop the Docker Compose environment:
+
+bash
+docker-compose down
+
+This command stops and removes the containers started by `docker-compose up`, cleaning up the test environment.
+
+By following these steps, you can ensure your backend is thoroughly tested and functions as expected.

@@ -7,8 +7,10 @@ dotenv.config();
 
 const port = process.env.PORT || 3000;
 
-// Connect to MongoDB
-connectDB();
+// Only connect if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 
 // Start server
 app.listen(port, () => {

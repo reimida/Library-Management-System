@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { Role } from '../types/auth';
 
 // Define the User interface that extends Mongoose Document
 export interface IUser extends Document {
@@ -6,7 +7,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
-  role: 'USER' | 'LIBRARIAN' | 'ADMIN';
+  role: Role;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -17,7 +18,11 @@ const UserSchema: Schema = new Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['USER', 'LIBRARIAN', 'ADMIN'], default: 'USER' },
+    role: { 
+      type: String, 
+      enum: Object.values(Role), 
+      default: Role.USER 
+    },
   },
   { timestamps: true }
 );

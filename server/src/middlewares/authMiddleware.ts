@@ -1,34 +1,33 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/jwtUtils';
+import jwt from 'jsonwebtoken';
+import { ApiError } from '../utils/ApiError';
+import { JwtPayload } from '../types/auth';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Extend Express Request type to include user info
 declare module 'express' {
   interface Request {
-    user?: {
-      userId: string;
-      email: string;
-      role: string;
-    }
+    user?: JwtPayload;
   }
 }
 
-export function authenticateToken(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.split(' ')[1]; // Bearer <token>
-
-  if (!token) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-
+export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const decoded = verifyToken(token);
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      throw new ApiError(401, 'No token provided');
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' });
+    if (error instanceof jwt.JsonWebTokenError) {
+      next(new ApiError(401, 'Invalid token'));
+    } else {
+      next(error);
+    }
   }
-} 
+}; 

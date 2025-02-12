@@ -47,8 +47,8 @@ Here is an example of how REST APIs could be structured for each module.
 - **POST /users/register**: Register new user.
 - **POST /users/login**: User login.
 - **POST /users/logout**: User logout.
-- **GET /users/me**: Get authenticated user information.
-- **PUT /users/me**: Update authenticated user information.
+- **GET /users/profile**: Get authenticated user information.
+- **PATCH /users/profile**: Update authenticated user information.
 
 ## Seats (/seats):
 - **GET /seats**: Get all seats (or filtered seats, e.g., by library).

@@ -1,10 +1,10 @@
-version: '3'
+version: '3.8'
 services:
   mongodb_test:
     image: mongo:latest
     container_name: mongodb_test
     ports:
-      - "27018:27017"
+      - "27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=test_db
     command: mongod --quiet --logpath /dev/null 

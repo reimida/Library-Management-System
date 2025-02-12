@@ -3,6 +3,7 @@ import { createUserInDB, findUserByEmail, getUserById, updateUser } from "../rep
 import bcrypt from 'bcryptjs'
 import { generateToken } from '../utils/jwtUtils';
 import type { LoginInput, RegisterInput, UpdateProfileInput } from '../validations/authSchemas';
+import { Role } from '../types/auth';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Should be in env
 
@@ -14,6 +15,7 @@ export async function registerUser(userData: RegisterInput): Promise<IUser> {
   const userWithHashedPassword = {
     ...userData,
     password: hashedPassword,
+    role: Role.USER // Set default role as USER enum value
   };
 
   const createdUser = await createUserInDB(userWithHashedPassword);
@@ -30,30 +32,31 @@ type LoginResponse = {
   token: string;
 };
 
-export async function loginUser(credentials: LoginInput): Promise<LoginResponse> {
-  const user = await findUserByEmail(credentials.email);
-  if (!user || !user.password) {
+export async function loginUser(loginData: LoginInput) {
+  const user = await findUserByEmail(loginData.email);
+  if (!user) {
     throw new Error('Invalid credentials');
   }
 
-  const isValidPassword = await bcrypt.compare(
-    credentials.password,
-    user.password
-  );
-  if (!isValidPassword) {
+  const isPasswordValid = await bcrypt.compare(loginData.password, user.password);
+  if (!isPasswordValid) {
     throw new Error('Invalid credentials');
   }
 
   const token = generateToken({
     userId: user._id.toString(),
     email: user.email,
-    role: user.role
+    role: user.role as Role // Cast the role to Role enum
   });
 
-  const { password: _, ...userWithoutPassword } = user.toObject();
-  return { 
-    user: userWithoutPassword as LoginResponse['user'], 
-    token 
+  return {
+    token,
+    user: {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role
+    }
   };
 }
 

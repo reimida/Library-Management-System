@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes";
+import libraryRoutes from './routes/libraryRoutes';
 
 const app = express();
 
@@ -14,5 +15,6 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use("/users", userRoutes);
+app.use('/libraries', libraryRoutes);
 
 export default app; 
