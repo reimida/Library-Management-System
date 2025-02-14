@@ -69,18 +69,4 @@ describe('Library Service', () => {
         .toThrow('Library not found');
     });
   });
-
-  describe('toggleLibraryStatus', () => {
-    const libraryId = new Types.ObjectId().toString();
-
-    it('should toggle library status successfully', async () => {
-      const updatedLibrary = { ...mockLibrary, isActive: false };
-      mockedRepo.updateLibraryInDB.mockResolvedValue(updatedLibrary as ILibrary);
-
-      const result = await libraryService.toggleLibraryStatus(libraryId, false);
-      
-      expect(result).toEqual(updatedLibrary);
-      expect(mockedRepo.updateLibraryInDB).toHaveBeenCalledWith(libraryId, { isActive: false });
-    });
-  });
 }); 

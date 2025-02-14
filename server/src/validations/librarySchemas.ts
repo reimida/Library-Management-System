@@ -39,7 +39,6 @@ export function validateLibraryInput<T extends boolean>(
   data: unknown, 
   partial: T
 ): Promise<T extends true ? Partial<LibraryData> : LibraryData> {
-  return (partial 
-    ? librarySchema.partial().parseAsync(data)
-    : librarySchema.parseAsync(data)) as Promise<T extends true ? Partial<LibraryData> : LibraryData>;
+  const schema = partial ? librarySchema.deepPartial() : librarySchema;
+  return schema.parseAsync(data) as Promise<T extends true ? Partial<LibraryData> : LibraryData>;
 } 

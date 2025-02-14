@@ -30,7 +30,9 @@ export const createLibrary = asyncHandler(async (req: Request, res: Response) =>
 export const getLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   
-  if (!Types.ObjectId.isValid(id)) {
+  try {
+    new Types.ObjectId(id);
+  } catch (error) {
     throw new ApiError(400, 'Invalid library ID format');
   }
 
@@ -55,13 +57,20 @@ export const listLibraries = asyncHandler(async (req: Request, res: Response) =>
 export const updateLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   
-  if (!Types.ObjectId.isValid(id)) {
+  try {
+    // Convert string to ObjectId to validate
+    new Types.ObjectId(id);
+  } catch (error) {
     throw new ApiError(400, 'Invalid library ID format');
   }
 
   const validatedData = await validateLibraryInput(req.body, true);
   const library = await libraryService.updateLibrary(id, validatedData);
   
+  if (!library) {
+    throw new ApiError(404, 'Library not found');
+  }
+
   res.json({
     success: true,
     data: library
@@ -71,7 +80,10 @@ export const updateLibrary = asyncHandler(async (req: Request, res: Response) =>
 export const deleteLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   
-  if (!Types.ObjectId.isValid(id)) {
+  try {
+    // Convert string to ObjectId to validate
+    new Types.ObjectId(id);
+  } catch (error) {
     throw new ApiError(400, 'Invalid library ID format');
   }
 
@@ -80,44 +92,5 @@ export const deleteLibrary = asyncHandler(async (req: Request, res: Response) =>
   res.json({
     success: true,
     message: 'Library deleted successfully'
-  });
-});
-
-export const toggleLibraryStatus = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { isActive } = req.body;
-  
-  if (!Types.ObjectId.isValid(id)) {
-    throw new ApiError(400, 'Invalid library ID format');
-  }
-
-  if (typeof isActive !== 'boolean') {
-    throw new ApiError(400, 'isActive must be a boolean value');
-  }
-
-  const library = await libraryService.toggleLibraryStatus(id, isActive);
-  
-  res.json({
-    success: true,
-    data: library
-  });
-});
-
-export const getLibraryByCode = asyncHandler(async (req: Request, res: Response) => {
-  const { code } = req.params;
-  
-  if (!code || typeof code !== 'string') {
-    throw new ApiError(400, 'Library code is required');
-  }
-
-  const library = await libraryService.getLibraryByCode(code);
-  
-  if (!library) {
-    throw new ApiError(404, 'Library not found');
-  }
-
-  res.json({
-    success: true,
-    data: library
   });
 }); 

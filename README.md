@@ -54,6 +54,10 @@ Develop a RESTful backend in Node.js for the efficient management of seat reserv
         ```
         (Make sure MongoDB `bin` directory is in your system's `PATH`)
 
+        OR
+
+        sudo systemctl start mongod
+
 ### Running the Backend
 
 1.  **Start the development server:**

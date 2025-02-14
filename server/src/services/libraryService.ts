@@ -87,19 +87,4 @@ export async function deleteLibrary(libraryId: string): Promise<ILibrary> {
     throw new Error('Library not found');
   }
   return deletedLibrary;
-}
-
-export async function getLibraryByCode(code: string): Promise<ILibrary | null> {
-  return await findLibraryByCode(code);
-}
-
-export async function toggleLibraryStatus(
-  libraryId: string,
-  isActive: boolean
-): Promise<ILibrary> {
-  const updatedLibrary = await updateLibraryInDB(libraryId, { isActive });
-  if (!updatedLibrary) {
-    throw new Error('Library not found');
-  }
-  return updatedLibrary;
 } 

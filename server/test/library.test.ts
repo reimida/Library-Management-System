@@ -129,7 +129,7 @@ describe('Library API', () => {
         .put(`/libraries/${libraryId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'Updated Library' });
-
+      
       expect(response.status).toBe(200);
       expect(response.body.data.name).toBe('Updated Library');
     });
@@ -156,7 +156,7 @@ describe('Library API', () => {
       const response = await request(app)
         .delete(`/libraries/${libraryId}`)
         .set('Authorization', `Bearer ${adminToken}`);
-
+      
       expect(response.status).toBe(200);
     });
 
