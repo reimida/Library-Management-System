@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import * as libraryService from '../services/libraryService';
 import { validateLibraryInput } from '../validations/librarySchemas';
-import { ApiError } from '../utils/ApiError';
+import { ApiError } from '../utils/apiError';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ZodError } from 'zod';
 
@@ -28,15 +28,15 @@ export const createLibrary = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const getLibrary = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { libraryId } = req.params;
   
   try {
-    new Types.ObjectId(id);
+    new Types.ObjectId(libraryId);
   } catch (error) {
     throw new ApiError(400, 'Invalid library ID format');
   }
 
-  const library = await libraryService.getLibrary(id);
+  const library = await libraryService.getLibrary(libraryId);
   
   res.json({
     success: true,
@@ -55,17 +55,16 @@ export const listLibraries = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const updateLibrary = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { libraryId } = req.params;
   
   try {
-    // Convert string to ObjectId to validate
-    new Types.ObjectId(id);
+    new Types.ObjectId(libraryId);
   } catch (error) {
     throw new ApiError(400, 'Invalid library ID format');
   }
 
   const validatedData = await validateLibraryInput(req.body, true);
-  const library = await libraryService.updateLibrary(id, validatedData);
+  const library = await libraryService.updateLibrary(libraryId, validatedData);
   
   if (!library) {
     throw new ApiError(404, 'Library not found');
@@ -78,16 +77,15 @@ export const updateLibrary = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const deleteLibrary = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { libraryId } = req.params;
   
   try {
-    // Convert string to ObjectId to validate
-    new Types.ObjectId(id);
+    new Types.ObjectId(libraryId);
   } catch (error) {
     throw new ApiError(400, 'Invalid library ID format');
   }
 
-  await libraryService.deleteLibrary(id);
+  await libraryService.deleteLibrary(libraryId);
   
   res.json({
     success: true,

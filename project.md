@@ -11,7 +11,10 @@ Manages library users and their authentication.
 #### Core Features
 - User registration and authentication
 - Profile management (view, edit)
-- Role-based access control (USER, LIBRARIAN, ADMIN)
+- Role-based access control:
+  - USER: Basic library access and bookings
+  - LIBRARIAN: Manage assigned library and its resources
+  - ADMIN: Full system access and librarian management
 
 #### Data Model
 - name: string
@@ -23,11 +26,12 @@ Manages library users and their authentication.
 #### Access Control
 - Public: Register, login
 - Authenticated: View/edit own profile
-- Admin: (future) User management
+- Admin: Librarian role management
 
 #### Relationships
 - Can make multiple reservations
 - Each reservation belongs to one user
+- Librarians are linked to specific libraries
 
 #### Implementation Status: ✅ Complete
 - ✅ User registration with validation
@@ -35,6 +39,7 @@ Manages library users and their authentication.
 - ✅ JWT authentication
 - ✅ Role-based authorization
 - ✅ Profile management
+- ✅ Librarian role management
 
 ### Libraries
 Manages library locations and their properties.
@@ -75,13 +80,14 @@ Manages library locations and their properties.
 
 #### Access Control
 - Public: View libraries and their details
-- Librarian: Create and update libraries
+- Librarian: Update assigned libraries only
 - Admin: All operations including deletion
 
 #### Relationships
 - Contains multiple seats (planned)
 - Has one schedule (planned)
 - Can have multiple reservations through seats (planned)
+- Can have multiple assigned librarians
 
 #### Implementation Status: ✅ Complete
 - ✅ Basic CRUD operations
@@ -89,6 +95,8 @@ Manages library locations and their properties.
 - ✅ Operating hours management
 - ✅ Status tracking
 - ✅ Input validation
+- ✅ Librarian assignment and management
+- ✅ Library code uniqueness validation
 
 ### Seats
 Manages individual seats within libraries.
@@ -121,14 +129,17 @@ Manages library operating hours and exceptions.
 ## Implementation Priority & Dependencies
 
 1. ✅ User Authentication & Management
-   - Core user functionality
-   - Role-based access control
-   - Authentication middleware
+   - ✅ Core user functionality
+   - ✅ Role-based access control
+   - ✅ Authentication middleware
+   - ✅ Librarian role management
 
 2. ✅ Library Management
-   - Basic library CRUD
-   - Operating hours management
-   - Status tracking
+   - ✅ Basic library CRUD
+   - ✅ Operating hours management
+   - ✅ Status tracking
+   - ✅ Librarian assignment
+   - ✅ Access control validation
 
 3. Schedule Management
    - Library operating hours

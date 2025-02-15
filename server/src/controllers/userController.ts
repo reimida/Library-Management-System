@@ -1,41 +1,11 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { registerUser, loginUser, getUserProfile, updateUserProfile } from '../services/userService';
+import { registerUser, loginUser, getUserProfile, updateUserProfile, assignUserAsLibrarian, removeUserAsLibrarian } from '../services/userService';
 import { LoginSchema, RegisterSchema, UpdateProfileSchema } from '../validations/authSchemas';
+import { asyncHandler } from '../utils/asyncHandler';
+import { validateAndExecute } from '../utils/controllerUtils';
 
-// Common error handler
-function handleControllerError(error: unknown, res: Response) {
-  if (error instanceof z.ZodError) 
-    return res.status(400).json({ errors: error.errors });
-  
-  if (error instanceof Error) {
-    if (error.message === 'Invalid credentials')
-      return res.status(401).json({ message: 'Invalid email or password' });
-    
-    console.error('Controller error:', error);
-  }
-  
-  return res.status(500).json({ message: 'Internal server error' });
-}
-
-// Generic validation handler
-async function validateAndExecute<T, R>(
-  req: Request,
-  res: Response,
-  schema: z.ZodSchema<T>,
-  handler: (data: T) => Promise<R>,
-  successStatus = 200
-) {
-  try {
-    const validatedData = schema.parse(req.body);
-    const result = await handler(validatedData);
-    return res.status(successStatus).json(result);
-  } catch (error) {
-    handleControllerError(error, res);
-  }
-}
-
-export const register = async (req: Request, res: Response) => {
+export const register = asyncHandler(async (req: Request, res: Response) => {
   return validateAndExecute(
     req,
     res,
@@ -52,9 +22,9 @@ export const register = async (req: Request, res: Response) => {
     },
     201
   );
-};
+});
 
-export const login = async (req: Request, res: Response) => {
+export const login = asyncHandler(async (req: Request, res: Response) => {
   return validateAndExecute(
     req,
     res,
@@ -72,22 +42,18 @@ export const login = async (req: Request, res: Response) => {
       };
     }
   );
-};
+});
 
-export const getProfile = async (req: Request, res: Response) => {
-  try {
-    if (!req.user?.userId) {
-      return res.status(401).json({ message: 'Authentication required' });
-    }
-
-    const profile = await getUserProfile(req.user.userId);
-    return res.json(profile);
-  } catch (error) {
-    handleControllerError(error, res);
+export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user?.userId) {
+    return res.status(401).json({ message: 'Authentication required' });
   }
-};
 
-export const updateProfile = async (req: Request, res: Response) => {
+  const profile = await getUserProfile(req.user.userId);
+  return res.json(profile);
+});
+
+export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user?.userId) {
     return res.status(401).json({ message: 'Authentication required' });
   }
@@ -104,4 +70,40 @@ export const updateProfile = async (req: Request, res: Response) => {
       };
     }
   );
-}; 
+});
+
+const librarianManagementSchema = z.object({
+  libraryId: z.string().min(1, "Library ID is required")
+});
+
+export const assignLibrarian = asyncHandler(async (req: Request, res: Response) => {
+  return validateAndExecute(
+    req,
+    res,
+    librarianManagementSchema,
+    async (data) => {
+      const { userId } = req.params;
+      const updatedUser = await assignUserAsLibrarian(userId, data.libraryId);
+      return {
+        message: 'User assigned as librarian successfully',
+        data: updatedUser
+      };
+    }
+  );
+});
+
+export const removeLibrarian = asyncHandler(async (req: Request, res: Response) => {
+  return validateAndExecute(
+    req,
+    res,
+    librarianManagementSchema,
+    async (data) => {
+      const { userId } = req.params;
+      const updatedUser = await removeUserAsLibrarian(userId, data.libraryId);
+      return {
+        message: 'Librarian role removed successfully',
+        data: updatedUser
+      };
+    }
+  );
+}); 

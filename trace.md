@@ -79,6 +79,19 @@
 *   **feat:** Updated JWT payload to include user role
 *   **test:** Added role-based access control tests for library endpoints
 
+## Schedule Management Feature - In Progress
+
+**Messages:**
+
+* **feat:** Defined schedule data model with regular operating hours and exceptions
+* **feat:** Created schedule repository layer for MongoDB operations
+* **feat:** Implemented schedule service with business logic for:
+  - Regular operating hours management
+  - Holiday/exception handling
+  - Schedule validation against library hours
+* **feat:** Added schedule validation using zod schemas
+* **feat:** Implemented schedule-related endpoints with role-based access
+
 ## Testing - Implemented
 
 ### User Authentication
@@ -132,3 +145,26 @@
 **Testing:**
 - `test/library.test.ts` - Integration tests
 - `test/libraryService.test.ts` - Unit tests
+
+## Librarian Management Feature - Implemented
+
+**Messages:**
+
+*   **feat:** Implemented librarian registration endpoint at `/users/librarian/register`
+*   **feat:** Added librarian-specific fields to User model
+*   **feat:** Created librarian validation schemas
+*   **feat:** Implemented librarian profile management endpoints
+*   **feat:** Added role-based access control for librarian operations
+*   **feat:** Implemented librarian assignment to libraries
+
+### Files Modified/Created
+
+**Core Implementation:**
+- `src/controllers/userController.ts` - Added librarian-specific endpoints
+- `src/services/userService.ts` - Added librarian management logic
+- `src/repositories/userRepository.ts` - Extended for librarian operations
+- `src/routes/userRoutes.ts` - Added librarian routes
+- `src/validations/librarianSchemas.ts` - Librarian-specific validation
+
+**Testing:**
+- `test/librarianManagement.test.ts` - Integration tests for librarian features

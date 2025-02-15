@@ -65,13 +65,14 @@ describe('Library API', () => {
       expect(response.body.data.name).toBe(testLibrary.name);
     });
 
-    it('should allow librarian to create library', async () => {
+    it('should not allow librarian to create library', async () => {
       const response = await request(app)
         .post('/libraries')
         .set('Authorization', `Bearer ${librarianToken}`)
         .send(testLibrary);
 
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
     });
 
     it('should not allow regular user to create library', async () => {
@@ -116,17 +117,12 @@ describe('Library API', () => {
     });
   });
 
-  describe('PUT /libraries/:id', () => {
-    let libraryId: string;
-
-    beforeEach(async () => {
-      const library = await Library.create(testLibrary);
-      libraryId = library._id.toString();
-    });
-
+  describe('PATCH /libraries/:id', () => {
     it('should allow admin to update library', async () => {
+      const library = await Library.create(testLibrary);
+
       const response = await request(app)
-        .put(`/libraries/${libraryId}`)
+        .patch(`/libraries/${library._id}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'Updated Library' });
       
@@ -135,8 +131,10 @@ describe('Library API', () => {
     });
 
     it('should not allow regular user to update library', async () => {
+      const library = await Library.create(testLibrary);
+
       const response = await request(app)
-        .put(`/libraries/${libraryId}`)
+        .patch(`/libraries/${library._id}`)
         .set('Authorization', `Bearer ${userToken}`)
         .send({ name: 'Updated Library' });
 

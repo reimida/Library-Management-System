@@ -24,7 +24,7 @@ Assertions tested:
 ## library.test.ts (10 tests)
 Actual tests:
 - should allow admin to create library
-- should allow librarian to create library
+- should not allow librarian to create library
 - should not allow regular user to create library
 - should validate required fields
 - should list all libraries without authentication
@@ -36,7 +36,7 @@ Actual tests:
 
 Assertions tested for each endpoint:
 ### POST /libraries:
-- Authorization checks
+- Authorization checks (admin only)
 - Input validation
 - Successful creation
 - Error handling
@@ -44,32 +44,64 @@ Assertions tested for each endpoint:
 ### GET /libraries:
 - List retrieval
 - Filtering
-- Authorization checks
+- Public access
 
-### PUT /libraries/:id:
-- Authorization checks
+### PATCH /libraries/:libraryId:
+- Authorization checks (admin and librarian)
+- Librarian ownership validation
 - Input validation
 - Successful update
 - Error handling
 
-### DELETE /libraries/:id:
-- Authorization checks
+### DELETE /libraries/:libraryId:
+- Authorization checks (admin only)
 - Successful deletion
 - Error handling
 
-## libraryService.test.ts (5 tests)
+## libraryService.test.ts (7 tests)
 Actual tests:
 - should create a library successfully
 - should throw error if library code already exists
 - should update library successfully
 - should throw error if library not found
 - should toggle library status successfully
+- should add librarian to library
+- should remove librarian from library
 
 Service layer assertions:
 - Data validation
 - Error handling
 - Repository interaction
 - Business logic implementation
+- Librarian management
+
+## librarianManagement.test.ts (4 tests)
+Actual tests:
+- should allow admin to assign librarian role
+- should allow admin to remove librarian role
+- should validate library exists before assigning librarian
+- should validate user exists before assigning role
+
+Assertions tested:
+- Authorization checks
+- Role assignment validation
+- Library existence validation
+- User existence validation
+- Error handling
+
+## libraryAccess.test.ts (4 tests)
+Actual tests:
+- should allow librarian to update assigned library
+- should not allow librarian to update unassigned library
+- should allow admin to update any library
+- should maintain librarian assignments after library update
+
+Assertions tested:
+- Authorization checks for librarians
+- Library assignment validation
+- Admin override capabilities
+- Data persistence for librarian assignments
+- Error handling for unauthorized access
 
 ## login.test.ts (1 test)
 Actual test:
@@ -103,6 +135,6 @@ Assertions tested:
 - Field-specific updates
 - Error handling
 
-Total Test Count: 19 individual tests
+Total Test Count: 28 individual tests
 
 Note: Each test may contain multiple assertions to thoroughly verify the functionality being tested. The assertions listed under each test describe what aspects are being verified within each test case.

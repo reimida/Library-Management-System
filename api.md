@@ -3,6 +3,12 @@
 ## Authentication
 All endpoints except registration and login require JWT authentication.
 
+## Role-Based Authorization
+The system has three roles with different permissions:
+- USER: Can view libraries and manage their own bookings
+- LIBRARIAN: Can manage their assigned library and its seats/bookings
+- ADMIN: Has full system access including librarian management
+
 ## Users API (✅ Implemented)
 
 ### Public Endpoints
@@ -42,6 +48,25 @@ All endpoints except registration and login require JWT authentication.
     - user: Updated profile
     - message: "Profile updated successfully"
 
+### Admin Only Endpoints
+- POST /users/:userId/librarian
+  - Assign librarian role to user and link to library
+  - Auth: Bearer token (ADMIN only)
+  - Body:
+    - libraryId: string (required)
+  - Returns:
+    - user: Updated user object with librarian role
+    - message: "User assigned as librarian successfully"
+
+- DELETE /users/:userId/librarian
+  - Remove librarian role from user and unlink from library
+  - Auth: Bearer token (ADMIN only)
+  - Body:
+    - libraryId: string (required)
+  - Returns:
+    - user: Updated user object with user role
+    - message: "Librarian role removed successfully"
+
 ## Libraries API (✅ Implemented)
 
 ### Public Endpoints
@@ -61,10 +86,18 @@ All endpoints except registration and login require JWT authentication.
     - Current status
     - Virtual field: isOpen (based on current time)
 
-### Admin/Librarian Only
+### Protected Endpoints
+- PATCH /libraries/:libraryId
+  - Update library details
+  - Auth: Bearer token (ADMIN or assigned LIBRARIAN)
+  - Note: Librarians can only update libraries they are assigned to
+  - Body: Same as POST (all fields optional)
+  - Returns: Updated library object
+
+### Admin Only Endpoints
 - POST /libraries
   - Create new library
-  - Auth: Bearer token (ADMIN or LIBRARIAN)
+  - Auth: Bearer token (ADMIN only)
   - Body: 
     - name: string (required, max 100)
     - libraryCode: string (required, unique, max 10)
@@ -89,12 +122,6 @@ All endpoints except registration and login require JWT authentication.
     - totalSeats: number
     - isActive: boolean (optional)
   - Returns: Created library object
-
-- PUT /libraries/:libraryId
-  - Update library
-  - Auth: Bearer token (ADMIN or LIBRARIAN)
-  - Body: Same as POST (all fields optional)
-  - Returns: Updated library object
 
 - DELETE /libraries/:libraryId
   - Delete library

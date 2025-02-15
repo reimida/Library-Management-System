@@ -33,6 +33,7 @@ export interface ILibrary extends Document {
   contactEmail: string;
   totalSeats: number;
   isActive: boolean;
+  librarians: mongoose.Types.ObjectId[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -113,7 +114,8 @@ const LibrarySchema: Schema = new Schema(
     isActive: {
       type: Boolean,
       default: true
-    }
+    },
+    librarians: [{ type: Schema.Types.ObjectId, ref: 'User' }]
   },
   { 
     timestamps: true,
