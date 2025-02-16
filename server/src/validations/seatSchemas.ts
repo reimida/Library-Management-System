@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-export const SeatStatus = {
-  AVAILABLE: 'AVAILABLE',
-  RESERVED: 'RESERVED',
-  OUT_OF_SERVICE: 'OUT_OF_SERVICE'
-} as const;
+export enum SeatStatus {
+  AVAILABLE = 'AVAILABLE',
+  RESERVED = 'RESERVED',
+  OUT_OF_SERVICE = 'OUT_OF_SERVICE'
+}
 
 export const seatSchema = z.object({
   code: z.string().min(1, 'Seat code is required'),
