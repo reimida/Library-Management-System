@@ -10,6 +10,7 @@ import {
   updateLibrary,
   deleteLibrary,
 } from '../controllers/libraryController';
+import seatRoutes from './seatRoutes';
 
 const router = Router();
 
@@ -31,4 +32,8 @@ router.patch('/:libraryId',
 // Admin routes
 router.post('/', authenticate, authorize([Role.ADMIN]), createLibrary);
 router.delete('/:libraryId', authenticate, authorize([Role.ADMIN]), deleteLibrary);
+
+// Mount seats router
+router.use('/:libraryId/seats', seatRoutes);
+
 export default router; 

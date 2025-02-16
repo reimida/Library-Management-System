@@ -67,7 +67,7 @@ The system has three roles with different permissions:
     - user: Updated user object with user role
     - message: "Librarian role removed successfully"
 
-## Libraries API (✅ Implemented)
+## Libraries API
 
 ### Public Endpoints
 - GET /libraries
@@ -78,20 +78,42 @@ The system has three roles with different permissions:
 
 - GET /libraries/:libraryId
   - Get library details
-  - Returns: Full library details including:
-    - Basic information
-    - Address
-    - Operating hours
-    - Contact details
-    - Current status
-    - Virtual field: isOpen (based on current time)
+  - Returns: {
+    id: string
+    name: string
+    libraryCode: string
+    address: {
+      street: string
+      city: string
+      state: string
+      postalCode: string
+      country: string
+    }
+    operatingHours: {
+      monday: { open: string, close: string }
+      tuesday: { open: string, close: string }
+      wednesday: { open: string, close: string }
+      thursday: { open: string, close: string }
+      friday: { open: string, close: string }
+      saturday?: { open: string, close: string }
+      sunday?: { open: string, close: string }
+    }
+    contactPhone: string
+    contactEmail: string
+    totalSeats: number
+    isActive: boolean
+    librarians: string[] // Array of librarian user IDs
+    isOpen: boolean // Virtual field based on current time
+    createdAt: string
+    updatedAt: string
+  }
 
 ### Protected Endpoints
 - PATCH /libraries/:libraryId
   - Update library details
   - Auth: Bearer token (ADMIN or assigned LIBRARIAN)
   - Note: Librarians can only update libraries they are assigned to
-  - Body: Same as POST (all fields optional)
+  - Body: Same fields as POST (all optional)
   - Returns: Updated library object
 
 ### Admin Only Endpoints
@@ -100,33 +122,37 @@ The system has three roles with different permissions:
   - Auth: Bearer token (ADMIN only)
   - Body: 
     - name: string (required, max 100)
-    - libraryCode: string (required, unique, max 10)
+    - libraryCode: string (required, unique, max 10, uppercase)
     - address: {
-      street: string
-      city: string
-      state: string
-      postalCode: string
-      country: string
+      street: string (required)
+      city: string (required)
+      state: string (required)
+      postalCode: string (required)
+      country: string (required)
     }
     - operatingHours: {
-      monday: { open: "HH:mm", close: "HH:mm" }
-      tuesday: { open: "HH:mm", close: "HH:mm" }
-      wednesday: { open: "HH:mm", close: "HH:mm" }
-      thursday: { open: "HH:mm", close: "HH:mm" }
-      friday: { open: "HH:mm", close: "HH:mm" }
+      monday: { open: "HH:mm", close: "HH:mm" } (required)
+      tuesday: { open: "HH:mm", close: "HH:mm" } (required)
+      wednesday: { open: "HH:mm", close: "HH:mm" } (required)
+      thursday: { open: "HH:mm", close: "HH:mm" } (required)
+      friday: { open: "HH:mm", close: "HH:mm" } (required)
       saturday?: { open: "HH:mm", close: "HH:mm" }
       sunday?: { open: "HH:mm", close: "HH:mm" }
     }
-    - contactPhone: string
-    - contactEmail: string
-    - totalSeats: number
-    - isActive: boolean (optional)
+    - contactPhone: string (required, format: +?[0-9\s-]+)
+    - contactEmail: string (required, valid email)
+    - totalSeats: number (required, min: 1)
+    - isActive: boolean (optional, default: true)
   - Returns: Created library object
 
 - DELETE /libraries/:libraryId
   - Delete library
   - Auth: Bearer token (ADMIN only)
-  - Returns: Success message
+  - Returns: { message: "Library deleted successfully" }
+  - Errors:
+    - 400: Invalid library ID format
+    - 403: Not authorized
+    - 404: Library not found
 
 ## Schedules API (Next to Implement)
 
@@ -141,32 +167,71 @@ The system has three roles with different permissions:
   - Body: operatingHours, exceptions
   - Required for: seat availability and reservation validation
 
-## Seats API (Depends on Schedules)
+## Seats API
 
 ### Public Endpoints
-- GET /seats
-  - List all seats
-  - Query params: libraryId, status, floor, area
-  - Note: Availability considers schedule
+- GET /libraries/:libraryId/seats
+  - List all seats in a library
+  - Query params: 
+    - floor: string
+    - area: string
+  - Returns: Array<{
+    id: string
+    code: string
+    floor: string
+    area: string
+  }>
 
-- GET /seats/:seatId
+- GET /libraries/:libraryId/seats/:seatId
   - Get seat details
-  - Returns: includes current availability based on schedule
+  - Returns: {
+    id: string
+    code: string
+    floor: string
+    area: string
+    status: 'AVAILABLE' | 'RESERVED' | 'OUT_OF_SERVICE'
+    libraryId: string
+    createdAt: string
+    updatedAt: string
+  }
 
-### Admin/Librarian Only
+### Admin/Librarian Only Endpoints
 - POST /libraries/:libraryId/seats
   - Create new seat in library
-  - Body: code, floor, area
-  - Note: Requires valid library
+  - Auth: Bearer token (ADMIN or assigned LIBRARIAN)
+  - Body: 
+    - code: string (required, unique within library)
+    - floor: string (required)
+    - area: string (required)
+  - Returns: Created seat object
+  - Errors:
+    - 400: Invalid input
+    - 409: Seat code already exists
+    - 403: Not authorized for this library
 
-- PUT /seats/:seatId
-  - Update seat
-  - Body: code, floor, area, status
-  - Note: Status changes affect reservations
+- PUT /libraries/:libraryId/seats/:seatId
+  - Update seat details
+  - Auth: Bearer token (ADMIN or assigned LIBRARIAN)
+  - Body: 
+    - code: string (optional)
+    - floor: string (optional)
+    - area: string (optional)
+    - status: 'AVAILABLE' | 'RESERVED' | 'OUT_OF_SERVICE' (optional)
+  - Returns: Updated seat object
+  - Errors:
+    - 400: Invalid input
+    - 409: Seat code already exists
+    - 403: Not authorized for this library
+    - 404: Seat not found
 
-- DELETE /seats/:seatId
+- DELETE /libraries/:libraryId/seats/:seatId
   - Delete seat
-  - Note: Only if no active reservations
+  - Auth: Bearer token (ADMIN or assigned LIBRARIAN)
+  - Returns: { message: "Seat deleted successfully" }
+  - Errors:
+    - 403: Not authorized for this library
+    - 404: Seat not found
+    - 400: Seat has active reservations
 
 ## Reservations API (Final Module)
 
