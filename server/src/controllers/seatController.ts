@@ -4,6 +4,7 @@ import * as seatService from '../services/seatService';
 import { ApiError } from '../utils/apiError';
 import { asyncHandler } from '../utils/asyncHandler';
 import { validateAndExecute } from '../utils/controllerUtils';
+import { z } from 'zod';
 
 export const getAllSeats = asyncHandler(async (req: Request, res: Response) => {
   const { libraryId } = req.params;
@@ -14,7 +15,10 @@ export const getAllSeats = asyncHandler(async (req: Request, res: Response) => {
     area: area as string
   });
   
-  res.json(seats);
+  res.json({
+    success: true,
+    data: seats
+  });
 });
 
 export const getSeatById = asyncHandler(async (req: Request, res: Response) => {
@@ -23,7 +27,10 @@ export const getSeatById = asyncHandler(async (req: Request, res: Response) => {
   const seat = await seatService.getSeatById(libraryId, seatId);
   if (!seat) throw new ApiError(404, 'Seat not found');
   
-  res.json(seat);
+  res.json({
+    success: true,
+    data: seat
+  });
 });
 
 export const createSeat = asyncHandler(async (req: Request, res: Response) => {
@@ -38,7 +45,10 @@ export const createSeat = asyncHandler(async (req: Request, res: Response) => {
         ...seatData,
         status: seatData.status ?? SeatStatus.AVAILABLE
       });
-      return seat;
+      return {
+        success: true,
+        data: seat
+      };
     },
     201
   );
@@ -54,7 +64,10 @@ export const updateSeat = asyncHandler(async (req: Request, res: Response) => {
     async (seatData) => {
       const seat = await seatService.updateSeat(libraryId, seatId, seatData);
       if (!seat) throw new ApiError(404, 'Seat not found');
-      return seat;
+      return {
+        success: true,
+        data: seat
+      };
     }
   );
 });
@@ -64,5 +77,8 @@ export const deleteSeat = asyncHandler(async (req: Request, res: Response) => {
   
   await seatService.deleteSeat(libraryId, seatId);
   
-  res.status(204).send();
+  res.status(204).json({
+    success: true,
+    message: 'Seat deleted successfully'
+  });
 }); 

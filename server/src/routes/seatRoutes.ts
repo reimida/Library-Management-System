@@ -58,4 +58,16 @@ router.delete(
   seatController.deleteSeat
 );
 
+// PATCH /libraries/:libraryId/seats/:seatId
+router.patch(
+  '/:seatId',
+  authenticate,
+  authorize([Role.ADMIN, Role.LIBRARIAN]),
+  (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.role === Role.ADMIN) return next();
+    return checkLibrarianOwnership(req, res, next);
+  },
+  seatController.updateSeat
+);
+
 export default router; 

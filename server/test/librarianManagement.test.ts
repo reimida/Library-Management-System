@@ -82,15 +82,14 @@ describe('Librarian Management', () => {
     });
 
     it('should fail when assigning librarian to non-existent library', async () => {
-      const nonExistentLibraryId = new mongoose.Types.ObjectId().toString();
-
       const response = await request(app)
         .post(`/users/${userId}/librarian`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ libraryId: nonExistentLibraryId });
+        .send({ libraryId: new mongoose.Types.ObjectId().toString() });
 
       expect(response.status).toBe(404);
-      expect(response.body.message).toContain('Library not found');
+      expect(response.body.success).toBe(false);
+      expect(response.body.errors).toContain('Library not found');
     });
 
     it('should fail when non-admin tries to assign librarian role', async () => {

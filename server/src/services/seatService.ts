@@ -15,7 +15,6 @@ export async function getSeatById(libraryId: string, seatId: string) {
 }
 
 export async function createSeat(libraryId: string, seatData: CreateSeatInput) {
-  // Check if seat code already exists in this library
   const existingSeat = await seatRepository.findByCode(libraryId, seatData.code);
   if (existingSeat) {
     throw new ApiError(409, 'Seat code already exists in this library');

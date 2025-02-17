@@ -1,6 +1,6 @@
 import { FilterQuery } from 'mongoose';
 import { Seat, ISeat } from '../models/Seat';
-import { CreateSeatDto, UpdateSeatDto } from '../types/seat';
+import mongoose from 'mongoose';
 
 export class SeatRepository {
   async findAll(libraryId: string, filter: { floor?: string; area?: string } = {}) {
@@ -13,10 +13,14 @@ export class SeatRepository {
   }
 
   async findById(libraryId: string, seatId: string) {
-    return Seat.findOne({ _id: seatId, libraryId });
+    if (!mongoose.Types.ObjectId.isValid(seatId)) return null;
+    return Seat.findOne({ 
+      _id: new mongoose.Types.ObjectId(seatId), 
+      libraryId 
+    });
   }
 
-  async create(libraryId: string, seatData: CreateSeatDto) {
+  async create(libraryId: string, seatData: Partial<ISeat>) {
     const seat = new Seat({
       ...seatData,
       libraryId
@@ -24,16 +28,24 @@ export class SeatRepository {
     return seat.save();
   }
 
-  async update(libraryId: string, seatId: string, seatData: UpdateSeatDto) {
+  async update(libraryId: string, seatId: string, seatData: Partial<ISeat>) {
+    if (!mongoose.Types.ObjectId.isValid(seatId)) return null;
     return Seat.findOneAndUpdate(
-      { _id: seatId, libraryId },
+      { 
+        _id: new mongoose.Types.ObjectId(seatId), 
+        libraryId 
+      },
       { $set: seatData },
       { new: true }
     );
   }
 
   async delete(libraryId: string, seatId: string) {
-    return Seat.findOneAndDelete({ _id: seatId, libraryId });
+    if (!mongoose.Types.ObjectId.isValid(seatId)) return null;
+    return Seat.findOneAndDelete({ 
+      _id: new mongoose.Types.ObjectId(seatId), 
+      libraryId 
+    });
   }
 
   async findByCode(libraryId: string, code: string) {
@@ -41,8 +53,7 @@ export class SeatRepository {
   }
 
   async hasActiveReservations(seatId: string): Promise<boolean> {
-    // This will be implemented when we add reservations
-    // For now, return false to allow deletion
+    // TODO: Implement when reservation module is added
     return false;
   }
 } 
