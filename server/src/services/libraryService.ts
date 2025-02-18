@@ -7,6 +7,7 @@ import {
   getLibraryById,
   updateLibraryInDB,
 } from '../repositories/libraryRepository';
+import { NotFoundError, ConflictError } from '../utils/errors';
 
 // Define a base type without Mongoose Document properties
 export interface LibraryData {
@@ -38,10 +39,9 @@ export type CreateLibraryInput = LibraryData;
 export type UpdateLibraryInput = Partial<LibraryData>;
 
 export async function createLibrary(libraryData: CreateLibraryInput): Promise<ILibrary> {
-  // Check if library with same code exists
   const existingLibrary = await findLibraryByCode(libraryData.libraryCode);
   if (existingLibrary) {
-    throw new Error('Library with this code already exists');
+    throw new ConflictError('Library with this code already exists');
   }
 
   return await createLibraryInDB(libraryData);
@@ -50,7 +50,7 @@ export async function createLibrary(libraryData: CreateLibraryInput): Promise<IL
 export async function getLibrary(libraryId: string): Promise<ILibrary> {
   const library = await getLibraryById(libraryId);
   if (!library) {
-    throw new Error('Library not found');
+    throw new NotFoundError('Library');
   }
   return library;
 }
@@ -66,17 +66,16 @@ export async function updateLibrary(
   libraryId: string,
   updateData: UpdateLibraryInput
 ): Promise<ILibrary> {
-  // If libraryCode is being updated, check for duplicates
   if (updateData.libraryCode) {
     const existingLibrary = await findLibraryByCode(updateData.libraryCode);
     if (existingLibrary && existingLibrary._id.toString() !== libraryId) {
-      throw new Error('Library with this code already exists');
+      throw new ConflictError('Library with this code already exists');
     }
   }
 
   const updatedLibrary = await updateLibraryInDB(libraryId, updateData);
   if (!updatedLibrary) {
-    throw new Error('Library not found');
+    throw new NotFoundError('Library');
   }
   return updatedLibrary;
 }
@@ -84,7 +83,7 @@ export async function updateLibrary(
 export async function deleteLibrary(libraryId: string): Promise<ILibrary> {
   const deletedLibrary = await deleteLibraryFromDB(libraryId);
   if (!deletedLibrary) {
-    throw new Error('Library not found');
+    throw new NotFoundError('Library');
   }
   return deletedLibrary;
 } 

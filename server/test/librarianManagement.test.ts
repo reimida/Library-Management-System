@@ -58,7 +58,8 @@ describe('Librarian Management', () => {
         .send({ libraryId });
 
       expect(response.status).toBe(200);
-      expect(response.body.data.role).toBe(Role.LIBRARIAN);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.data.role).toBe(Role.LIBRARIAN);
 
       // Verify library has new librarian
       const library = await Library.findById(libraryId);
@@ -66,19 +67,20 @@ describe('Librarian Management', () => {
     });
 
     it('should fail if user is already a librarian', async () => {
-      // First assignment
+      // First make the user a librarian
       await request(app)
         .post(`/users/${userId}/librarian`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ libraryId });
 
-      // Second attempt
+      // Then try to make them a librarian again
       const response = await request(app)
         .post(`/users/${userId}/librarian`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ libraryId });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(409);
+      expect(response.body.message).toContain('already a librarian');
     });
 
     it('should fail when assigning librarian to non-existent library', async () => {
@@ -89,7 +91,7 @@ describe('Librarian Management', () => {
 
       expect(response.status).toBe(404);
       expect(response.body.success).toBe(false);
-      expect(response.body.errors).toContain('Library not found');
+      expect(response.body.message).toBe('Library not found');
     });
 
     it('should fail when non-admin tries to assign librarian role', async () => {
@@ -112,7 +114,7 @@ describe('Librarian Management', () => {
         .send({ libraryId });
 
       expect(response.status).toBe(403);
-      expect(response.body.message).toContain('Unauthorized');
+      expect(response.body.message).toContain('Not authorized');
     });
 
     it('should add librarian to library librarians list', async () => {
@@ -142,7 +144,8 @@ describe('Librarian Management', () => {
         .send({ libraryId });
 
       expect(response.status).toBe(200);
-      expect(response.body.data.role).toBe(Role.USER);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.data.role).toBe(Role.USER);
 
       // Verify library no longer has librarian
       const library = await Library.findById(libraryId);

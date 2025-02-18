@@ -155,7 +155,7 @@ describe('Library API', () => {
         .delete(`/libraries/${libraryId}`)
         .set('Authorization', `Bearer ${adminToken}`);
       
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(204);
     });
 
     it('should not allow librarian to delete library', async () => {

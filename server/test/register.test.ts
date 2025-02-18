@@ -19,7 +19,8 @@ describe('User Registration', () => {
       .send(userData);
 
     expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('user');
-    expect(response.body.user.email).toBe(userData.email);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data).toHaveProperty('user');
+    expect(response.body.data.user.email).toBe(userData.email);
   });
 }); 

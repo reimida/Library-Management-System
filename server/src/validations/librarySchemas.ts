@@ -35,10 +35,7 @@ export const librarySchema = z.object({
   isActive: z.boolean().optional().default(true)
 });
 
-export function validateLibraryInput<T extends boolean>(
-  data: unknown, 
-  partial: T
-): Promise<T extends true ? Partial<LibraryData> : LibraryData> {
-  const schema = partial ? librarySchema.deepPartial() : librarySchema;
-  return schema.parseAsync(data) as Promise<T extends true ? Partial<LibraryData> : LibraryData>;
-} 
+export const updateLibrarySchema = librarySchema.partial(); // Makes all fields optional
+
+export const validateLibraryInput = (input: unknown) => librarySchema.safeParse(input);
+export const validateUpdateLibraryInput = (input: unknown) => updateLibrarySchema.safeParse(input);

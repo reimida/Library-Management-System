@@ -27,7 +27,8 @@ describe('User Login', () => {
       });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('token');
-    expect(response.body).toHaveProperty('user');
+    expect(response.body.success).toBe(true);
+    expect(response.body.data).toHaveProperty('token');
+    expect(response.body.data).toHaveProperty('user');
   });
 });

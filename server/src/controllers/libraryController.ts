@@ -1,47 +1,29 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import * as libraryService from '../services/libraryService';
-import { validateLibraryInput } from '../validations/librarySchemas';
-import { ApiError } from '../utils/apiError';
+import { librarySchema, validateLibraryInput, updateLibrarySchema } from '../validations/librarySchemas';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ZodError } from 'zod';
+import { validateAndExecute, sendSuccess, validateId } from '../utils/controllerUtils';
 
 export const createLibrary = asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const validatedData = await validateLibraryInput(req.body, false);
-    const library = await libraryService.createLibrary(validatedData);
-    
-    res.status(201).json({
-      success: true,
-      data: library
-    });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(400).json({
-        success: false,
-        error: error.errors
-      });
-      return;
+  return validateAndExecute(
+    req,
+    res,
+    librarySchema,
+    async (data) => {
+      const library = await libraryService.createLibrary(data);
+      return sendSuccess(res, library, 'Library created successfully', 201);
     }
-    throw error; // Let the global error handler handle other errors
-  }
+  );
 });
 
 export const getLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { libraryId } = req.params;
+  validateId(libraryId, 'library');
   
-  try {
-    new Types.ObjectId(libraryId);
-  } catch (error) {
-    throw new ApiError(400, 'Invalid library ID format');
-  }
-
   const library = await libraryService.getLibrary(libraryId);
-  
-  res.json({
-    success: true,
-    data: library
-  });
+  return sendSuccess(res, library);
 });
 
 export const listLibraries = asyncHandler(async (req: Request, res: Response) => {
@@ -56,39 +38,26 @@ export const listLibraries = asyncHandler(async (req: Request, res: Response) =>
 
 export const updateLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { libraryId } = req.params;
-  
-  try {
-    new Types.ObjectId(libraryId);
-  } catch (error) {
-    throw new ApiError(400, 'Invalid library ID format');
-  }
+  validateId(libraryId, 'library');
 
-  const validatedData = await validateLibraryInput(req.body, true);
-  const library = await libraryService.updateLibrary(libraryId, validatedData);
-  
-  if (!library) {
-    throw new ApiError(404, 'Library not found');
-  }
+  const library = await validateAndExecute(
+    req,
+    res,
+    updateLibrarySchema,
+    async (data) => {
+      return await libraryService.updateLibrary(libraryId, data);
+    }
+  );
 
-  res.json({
-    success: true,
-    data: library
-  });
+  if (library) {
+    return sendSuccess(res, library, 'Library updated successfully');
+  }
 });
 
 export const deleteLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { libraryId } = req.params;
+  validateId(libraryId, 'library');
   
-  try {
-    new Types.ObjectId(libraryId);
-  } catch (error) {
-    throw new ApiError(400, 'Invalid library ID format');
-  }
-
   await libraryService.deleteLibrary(libraryId);
-  
-  res.json({
-    success: true,
-    message: 'Library deleted successfully'
-  });
+  return sendSuccess(res, null, 'Library deleted successfully', 204);
 }); 

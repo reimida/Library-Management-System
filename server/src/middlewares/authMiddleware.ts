@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { ApiError } from '../utils/apiError';
 import { JwtPayload } from '../types/auth';
 import { asyncHandler } from '../utils/asyncHandler';
+import { AuthError } from '../utils/errors';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -17,7 +17,7 @@ export const authenticate = asyncHandler(async (req: Request, res: Response, nex
   const token = req.headers.authorization?.split(' ')[1];
   
   if (!token) {
-    throw new ApiError(401, 'No token provided');
+    throw new AuthError(401, 'No token provided');
   }
 
   const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;

@@ -20,14 +20,14 @@ export async function getUserById(userId: string): Promise<IUser | null> {
 export async function updateUser(
   userId: string, 
   userData: UpdateProfileInput
-): Promise<IUser | null> {
-  return User.findByIdAndUpdate(
+): Promise<IUser> {
+  const updatedUser = await User.findByIdAndUpdate(
     userId,
     { $set: userData },
-    /*new: true returns updated document
-    runValidators ensures mongoose validations run on update*/
     { new: true, runValidators: true }
-  ) as unknown as IUser;
+  );
+  
+  return updatedUser as IUser;
 }
 
 export async function updateUserRoleInDB(userId: string, role: Role): Promise<IUser | null> {
@@ -49,7 +49,7 @@ export async function addUserAsLibrarian(
   );
 }
 
-export async function removeUserAsLibrarian(
+export async function removeUserAsLibrarianFromDB(
   userId: string,
   libraryId: string
 ): Promise<ILibrary | null> {
@@ -69,4 +69,8 @@ export async function isUserAssignedToLibrary(
     librarians: new Types.ObjectId(userId)
   });
   return !!library;
+}
+
+export async function getUserProfileFromDB(userId: string) {
+  return await User.findById(userId).select('-password').lean();
 } 

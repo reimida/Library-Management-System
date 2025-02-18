@@ -1,33 +1,34 @@
 import { Request, Response, NextFunction } from 'express';
-import { ApiError } from '../utils/apiError';
+import { BusinessError } from '../utils/errors';
 import { getLibraryById } from '../repositories/libraryRepository';
 import { asyncHandler } from '../utils/asyncHandler';
+import { getUserById } from '../repositories/userRepository';
+import { checkLibrarianAccess } from '../services/userService';
 
 export const checkLibrarianOwnership = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const libraryId = req.params.libraryId;
+  const { libraryId } = req.params;
   const userId = req.user?.userId;
 
   if (!userId) {
-    throw new ApiError(401, 'Authentication required');
+    throw new BusinessError('Authentication required');
   }
 
-  const library = await getLibraryById(libraryId);
-  
-  if (!library) {
-    throw new ApiError(404, 'Library not found');
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new BusinessError('User not found');
   }
 
-  // Check if the user is a librarian of this library
-  const isLibrarian = library.librarians.some(
-    librarianId => librarianId.toString() === userId
-  );
+  if (user.role === 'admin') {
+    return next();
+  }
 
+  const isLibrarian = await checkLibrarianAccess(userId, libraryId);
   if (!isLibrarian) {
-    throw new ApiError(403, 'You are not authorized to manage this library');
+    throw new BusinessError('Not authorized to manage this library');
   }
 
   next();

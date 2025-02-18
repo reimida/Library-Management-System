@@ -183,15 +183,13 @@ describe('Seats API', () => {
 
     it('should list all seats in library', async () => {
       const response = await request(app)
-        .get(`/libraries/${libraryId}/seats`)
-        .set('Authorization', `Bearer ${adminToken}`);
+        .get(`/libraries/${libraryId}/seats`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      const seats = response.body.data;
-      expect(Array.isArray(seats)).toBe(true);
-      expect(seats.length).toBe(2);
-      seats.forEach((seat: SeatResponse) => {
+      expect(Array.isArray(response.body.data.seats)).toBe(true);
+      expect(response.body.data.seats.length).toBe(2);
+      response.body.data.seats.forEach((seat: SeatResponse) => {
         expect(seatSchema.safeParse(seat).success).toBe(true);
       });
     });
@@ -199,14 +197,12 @@ describe('Seats API', () => {
     it('should filter seats by status', async () => {
       const response = await request(app)
         .get(`/libraries/${libraryId}/seats`)
-        .query({ status: SeatStatus.AVAILABLE })
-        .set('Authorization', `Bearer ${adminToken}`);
+        .query({ status: SeatStatus.AVAILABLE });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      const seats = response.body.data;
-      expect(Array.isArray(seats)).toBe(true);
-      seats.forEach((seat: SeatResponse) => {
+      expect(Array.isArray(response.body.data.seats)).toBe(true);
+      response.body.data.seats.forEach((seat: SeatResponse) => {
         expect(seat.status).toBe(SeatStatus.AVAILABLE);
       });
     });
@@ -214,13 +210,12 @@ describe('Seats API', () => {
     it('should filter seats by floor', async () => {
       const response = await request(app)
         .get(`/libraries/${libraryId}/seats`)
-        .query({ floor: '1st' })
-        .set('Authorization', `Bearer ${adminToken}`);
+        .query({ floor: '1st' });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      const seats = response.body.data;
-      expect(seats.every((seat: SeatResponse) => seat.floor === '1st')).toBe(true);
+      expect(Array.isArray(response.body.data.seats)).toBe(true);
+      expect(response.body.data.seats.every((seat: SeatResponse) => seat.floor === '1st')).toBe(true);
     });
   });
 

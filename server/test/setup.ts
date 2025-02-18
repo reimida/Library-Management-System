@@ -4,11 +4,13 @@ const TEST_MONGODB_URI = process.env.TEST_DATABASE_URL || 'mongodb://localhost:2
 
 let isConnected = false;
 
-// Export these functions to be used in test files
 export async function connect() {
   try {
     if (!isConnected) {
-      await mongoose.connect(TEST_MONGODB_URI);
+      await mongoose.connect(TEST_MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000, // Reduce timeout
+        socketTimeoutMS: 5000
+      });
       isConnected = true;
     }
   } catch (error) {

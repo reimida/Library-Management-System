@@ -1,20 +1,11 @@
 import User, { IUser } from '../models/User';
-import { 
-  createUserInDB, 
-  findUserByEmail, 
-  getUserById, 
-  updateUser, 
-  updateUserRoleInDB, 
-  addUserAsLibrarian, 
-  removeUserAsLibrarian as removeUserAsLibrarianFromDB,
-  isUserAssignedToLibrary
-} from "../repositories/userRepository";
+import * as userRepository from "../repositories/userRepository";
 import { generateToken } from '../utils/jwtUtils';
 import type { LoginInput, RegisterInput, UpdateProfileInput } from '../validations/authSchemas';
 import { Role } from '../types/auth';
 import { getLibraryById } from '../repositories/libraryRepository';
-import { ApiError } from '../utils/apiError';
 import { hashPassword, comparePasswords } from '../utils/passwordUtils';
+import { NotFoundError, ConflictError, BusinessError } from '../utils/errors';
 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Should be in env
@@ -29,7 +20,13 @@ export async function registerUser(userData: RegisterInput): Promise<IUser> {
     role: Role.USER
   };
 
-  return await createUserInDB(userWithHashedPassword);
+  const user = await userRepository.createUserInDB(userWithHashedPassword);
+  
+  // Remove password from response
+  const userResponse = user.toObject();
+  delete userResponse.password;
+  
+  return userResponse;
 }
 
 type LoginResponse = {
@@ -43,14 +40,14 @@ type LoginResponse = {
 };
 
 export async function loginUser(loginData: LoginInput) {
-  const user = await findUserByEmail(loginData.email);
+  const user = await userRepository.findUserByEmail(loginData.email);
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw new BusinessError('Invalid credentials');
   }
 
   const isPasswordValid = await comparePasswords(loginData.password, user.password);
   if (!isPasswordValid) {
-    throw new Error('Invalid credentials');
+    throw new BusinessError('Invalid credentials');
   }
 
   const token = generateToken({
@@ -70,51 +67,59 @@ export async function loginUser(loginData: LoginInput) {
   };
 }
 
-export async function getUserProfile(userId: string): Promise<IUser | null> {
-  const user = await getUserById(userId);
+export async function getUserProfile(userId: string) {
+  const user = await userRepository.getUserProfileFromDB(userId);
+  if (!user) throw new NotFoundError('User');
   return user;
 }
 
 export async function updateUserProfile(
   userId: string,
   updateData: UpdateProfileInput
-): Promise<IUser | null> {
-  const updatedUser = await updateUser(userId, updateData);
-  return updatedUser;
+): Promise<IUser> {
+  const updatedUser = await userRepository.updateUser(userId, updateData);
+  if (!updatedUser) {
+    throw new NotFoundError('User');
+  }
+  
+  const userResponse = updatedUser.toObject();
+  delete userResponse.password;
+  return userResponse as IUser;
 }
 
 export async function assignUserAsLibrarian(userId: string, libraryId: string): Promise<IUser> {
-  const user = await getUserById(userId);
+  const user = await userRepository.getUserById(userId);
   if (!user) {
-    throw new ApiError(404, 'User not found');
+    throw new NotFoundError('User');
   }
 
+  // Check role before checking library to fail fast
   if (user.role === Role.LIBRARIAN) {
-    throw new ApiError(400, 'User is already a librarian');
+    throw new ConflictError('User is already a librarian');
   }
 
   const library = await getLibraryById(libraryId);
   if (!library) {
-    throw new ApiError(404, 'Library not found');
+    throw new NotFoundError('Library');
   }
 
-  const isAlreadyAssigned = await isUserAssignedToLibrary(userId, libraryId);
+  const isAlreadyAssigned = await userRepository.isUserAssignedToLibrary(userId, libraryId);
   if (isAlreadyAssigned) {
-    throw new ApiError(400, 'User is already assigned to this library');
+    throw new ConflictError('User is already assigned to this library');
   }
 
   // First update user role
-  const updatedUser = await updateUserRoleInDB(userId, Role.LIBRARIAN);
+  const updatedUser = await userRepository.updateUserRoleInDB(userId, Role.LIBRARIAN);
   if (!updatedUser) {
-    throw new ApiError(500, 'Failed to update user role');
+    throw new BusinessError('Failed to update user role');
   }
 
   // Then add to library
-  const updatedLibrary = await addUserAsLibrarian(userId, libraryId);
+  const updatedLibrary = await userRepository.addUserAsLibrarian(userId, libraryId);
   if (!updatedLibrary) {
     // Rollback role change if library update fails
-    await updateUserRoleInDB(userId, Role.USER);
-    throw new ApiError(500, 'Failed to assign librarian to library');
+    await userRepository.updateUserRoleInDB(userId, Role.USER);
+    throw new BusinessError('Failed to assign librarian to library');
   }
 
   return updatedUser;
@@ -123,34 +128,61 @@ export async function assignUserAsLibrarian(userId: string, libraryId: string): 
 export async function removeUserAsLibrarian(userId: string, libraryId: string): Promise<IUser> {
   const user = await getUserById(userId);
   if (!user) {
-    throw new ApiError(404, 'User not found');
+    throw new NotFoundError('User');
   }
 
   if (user.role !== Role.LIBRARIAN) {
-    throw new ApiError(400, 'User is not a librarian');
+    throw new BusinessError('User is not a librarian');
   }
 
   const library = await getLibraryById(libraryId);
   if (!library) {
-    throw new ApiError(404, 'Library not found');
+    throw new NotFoundError('Library');
   }
 
-  const isAssigned = await isUserAssignedToLibrary(userId, libraryId);
+  const isAssigned = await userRepository.isUserAssignedToLibrary(userId, libraryId);
   if (!isAssigned) {
-    throw new ApiError(400, 'User is not assigned to this library');
+    throw new BusinessError('User is not assigned to this library');
   }
 
   // First remove from library
-  const updatedLibrary = await removeUserAsLibrarianFromDB(userId, libraryId);
+  const updatedLibrary = await userRepository.removeUserAsLibrarianFromDB(userId, libraryId);
   if (!updatedLibrary) {
-    throw new ApiError(500, 'Failed to remove librarian from library');
+    throw new BusinessError('Failed to remove librarian from library');
   }
 
   // Then update role back to user
-  const updatedUser = await updateUserRoleInDB(userId, Role.USER);
+  const updatedUser = await userRepository.updateUserRoleInDB(userId, Role.USER);
   if (!updatedUser) {
-    throw new ApiError(404, 'User not found');
+    throw new NotFoundError('User');
   }
 
   return updatedUser;
+}
+
+export async function checkLibrarianAccess(userId: string, libraryId: string): Promise<boolean> {
+  const library = await getLibraryById(libraryId);
+  if (!library) {
+    throw new NotFoundError('Library');
+  }
+
+  return library.librarians.some(
+    librarianId => librarianId.toString() === userId
+  );
+}
+
+export async function getUserById(userId: string): Promise<IUser> {
+  const user = await userRepository.getUserById(userId);
+  if (!user) {
+    throw new NotFoundError('User');
+  }
+  return user;
+}
+
+export async function findUserByEmail(email: string): Promise<IUser> {
+  const user = await userRepository.findUserByEmail(email);
+  if (!user) {
+    throw new NotFoundError('User');
+  }
+  return user;
 } 
