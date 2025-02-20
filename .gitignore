@@ -9,4 +9,5 @@ build
 prisma/migrations
 prisma/.env
 .idea
-.vscode
+.vs
+codebase-file.txt

@@ -2,25 +2,111 @@ import { Types } from 'mongoose';
 import * as libraryService from '../src/services/libraryService';
 import * as libraryRepo from '../src/repositories/libraryRepository';
 import { ILibrary } from '../src/models/Library';
+import { ConflictError, NotFoundError, BusinessError } from '../src/utils/errors';
+import { MongoServerError } from 'mongodb';
+import type { CreateLibraryInput } from '../src/services/libraryService';
+import type { Document } from 'mongoose';
 
-// Mock the repository
 jest.mock('../src/repositories/libraryRepository');
-const mockedRepo = jest.mocked(libraryRepo);
+
+const mockedRepo = libraryRepo as jest.Mocked<typeof libraryRepo>;
+
+const mockLibraryInput: CreateLibraryInput = {
+  name: 'Test Library',
+  libraryCode: 'TEST001',
+  address: {
+    street: '123 Test St',
+    city: 'Test City',
+    state: 'TS',
+    postalCode: '12345',
+    country: 'Test Country'
+  },
+  operatingHours: {
+    monday: { open: '09:00', close: '17:00' },
+    tuesday: { open: '09:00', close: '17:00' },
+    wednesday: { open: '09:00', close: '17:00' },
+    thursday: { open: '09:00', close: '17:00' },
+    friday: { open: '09:00', close: '17:00' },
+    saturday: { open: '10:00', close: '15:00' },
+    sunday: { open: '', close: '' }
+  },
+  contactPhone: '123-456-7890',
+  contactEmail: 'test@library.com',
+  totalSeats: 100,
+  isActive: true
+};
+
+function createMockLibrary(data: Partial<ILibrary> = {}): ILibrary {
+  return {
+    ...mockLibraryInput,
+    _id: new Types.ObjectId(),
+    librarians: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    // Add required Document methods
+    $assertPopulated: jest.fn(),
+    $clearModifiedPaths: jest.fn(),
+    $clone: jest.fn(),
+    $createModifiedPathsSnapshot: jest.fn(),
+    $getAllSubdocs: jest.fn(),
+    $ignore: jest.fn(),
+    $inc: jest.fn(),
+    $isDefault: jest.fn(),
+    $isDeleted: jest.fn(),
+    $isEmpty: jest.fn(),
+    $isValid: jest.fn(),
+    $locals: {},
+    $markValid: jest.fn(),
+    $model: jest.fn(),
+    $op: null,
+    $parent: jest.fn(),
+    $session: jest.fn(),
+    $set: jest.fn(),
+    $toObject: jest.fn(),
+    $where: jest.fn(),
+    collection: {} as any,
+    db: {} as any,
+    delete: jest.fn(),
+    deleteOne: jest.fn(),
+    depopulate: jest.fn(),
+    directModifiedPaths: jest.fn(),
+    equals: jest.fn(),
+    errors: {},
+    get: jest.fn(),
+    getChanges: jest.fn(),
+    increment: jest.fn(),
+    init: jest.fn(),
+    invalidate: jest.fn(),
+    isDirectModified: jest.fn(),
+    isDirectSelected: jest.fn(),
+    isInit: jest.fn(),
+    isModified: jest.fn(),
+    isNew: false,
+    isSelected: jest.fn(),
+    markModified: jest.fn(),
+    modifiedPaths: jest.fn(),
+    modelName: 'Library',
+    overwrite: jest.fn(),
+    populate: jest.fn(),
+    populated: jest.fn(),
+    remove: jest.fn(),
+    replaceOne: jest.fn(),
+    save: jest.fn(),
+    schema: {} as any,
+    set: jest.fn(),
+    toJSON: jest.fn(),
+    toObject: jest.fn(),
+    unmarkModified: jest.fn(),
+    update: jest.fn(),
+    updateOne: jest.fn(),
+    validate: jest.fn(),
+    validateSync: jest.fn(),
+    ...data
+  } as unknown as ILibrary;
+}
 
 describe('Library Service', () => {
-  const mockLibrary: Partial<ILibrary> = {
-    name: 'Central Library',
-    libraryCode: 'CTL001',
-    address: {
-      street: '123 Main St',
-      city: 'Test City',
-      state: 'Test State',
-      postalCode: '12345',
-      country: 'Test Country'
-    },
-    totalSeats: 100,
-    isActive: true
-  };
+  const mockLibrary = createMockLibrary();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -28,45 +114,116 @@ describe('Library Service', () => {
 
   describe('createLibrary', () => {
     it('should create a library successfully', async () => {
-      mockedRepo.findLibraryByCode.mockResolvedValue(null);
-      mockedRepo.createLibraryInDB.mockResolvedValue(mockLibrary as ILibrary);
-
-      const result = await libraryService.createLibrary(mockLibrary as any);
+      mockedRepo.createLibraryInDB.mockResolvedValue(mockLibrary);
+      
+      const result = await libraryService.createLibrary(mockLibraryInput);
       
       expect(result).toEqual(mockLibrary);
-      expect(mockedRepo.findLibraryByCode).toHaveBeenCalledWith(mockLibrary.libraryCode);
-      expect(mockedRepo.createLibraryInDB).toHaveBeenCalledWith(mockLibrary);
+      expect(mockedRepo.createLibraryInDB).toHaveBeenCalledWith(mockLibraryInput);
     });
 
-    it('should throw error if library code already exists', async () => {
-      mockedRepo.findLibraryByCode.mockResolvedValue(mockLibrary as ILibrary);
-
-      await expect(libraryService.createLibrary(mockLibrary as any))
+    it('should throw ConflictError if library code already exists', async () => {
+      mockedRepo.createLibraryInDB.mockRejectedValue(new ConflictError('Library with this code already exists'));
+      
+      await expect(libraryService.createLibrary(mockLibraryInput))
         .rejects
-        .toThrow('Library with this code already exists');
+        .toThrow(ConflictError);
+    });
+  });
+
+  describe('getLibrary', () => {
+    it('should get a library successfully', async () => {
+      mockedRepo.getLibraryById.mockResolvedValue(mockLibrary);
+      
+      const result = await libraryService.getLibrary(mockLibrary._id.toString());
+      
+      expect(result).toEqual(mockLibrary);
+      expect(mockedRepo.getLibraryById).toHaveBeenCalledWith(mockLibrary._id.toString());
+    });
+
+    it('should throw NotFoundError if library does not exist', async () => {
+      mockedRepo.getLibraryById.mockRejectedValue(new NotFoundError('Library'));
+      
+      await expect(libraryService.getLibrary(mockLibrary._id.toString()))
+        .rejects
+        .toThrow(NotFoundError);
+    });
+
+    it('should throw BusinessError if library ID is invalid', async () => {
+      mockedRepo.getLibraryById.mockRejectedValue(new BusinessError('Invalid library ID'));
+      
+      await expect(libraryService.getLibrary('invalid-id'))
+        .rejects
+        .toThrow(BusinessError);
     });
   });
 
   describe('updateLibrary', () => {
     const updateData = { name: 'Updated Library' };
-    const libraryId = new Types.ObjectId().toString();
 
-    it('should update library successfully', async () => {
-      const updatedLibrary = { ...mockLibrary, ...updateData };
-      mockedRepo.updateLibraryInDB.mockResolvedValue(updatedLibrary as ILibrary);
-
-      const result = await libraryService.updateLibrary(libraryId, updateData);
+    it('should update a library successfully', async () => {
+      const updatedLibrary = createMockLibrary({ ...mockLibrary, ...updateData });
+      mockedRepo.updateLibraryInDB.mockResolvedValue(updatedLibrary);
+      
+      const result = await libraryService.updateLibrary(mockLibrary._id.toString(), updateData);
       
       expect(result).toEqual(updatedLibrary);
-      expect(mockedRepo.updateLibraryInDB).toHaveBeenCalledWith(libraryId, updateData);
+      expect(mockedRepo.updateLibraryInDB).toHaveBeenCalledWith(mockLibrary._id.toString(), updateData);
     });
 
-    it('should throw error if library not found', async () => {
-      mockedRepo.updateLibraryInDB.mockResolvedValue(null);
-
-      await expect(libraryService.updateLibrary(libraryId, updateData))
+    it('should throw NotFoundError if library does not exist', async () => {
+      mockedRepo.updateLibraryInDB.mockRejectedValue(new NotFoundError('Library'));
+      
+      await expect(libraryService.updateLibrary(mockLibrary._id.toString(), updateData))
         .rejects
-        .toThrow('Library not found');
+        .toThrow(NotFoundError);
+    });
+
+    it('should throw ConflictError if library code already exists', async () => {
+      mockedRepo.updateLibraryInDB.mockRejectedValue(new ConflictError('Library with this code already exists'));
+      
+      await expect(libraryService.updateLibrary(mockLibrary._id.toString(), { libraryCode: 'EXISTING' }))
+        .rejects
+        .toThrow(ConflictError);
+    });
+  });
+
+  describe('deleteLibrary', () => {
+    it('should delete a library successfully', async () => {
+      mockedRepo.deleteLibraryFromDB.mockResolvedValue(mockLibrary);
+      
+      const result = await libraryService.deleteLibrary(mockLibrary._id.toString());
+      
+      expect(result).toEqual(mockLibrary);
+      expect(mockedRepo.deleteLibraryFromDB).toHaveBeenCalledWith(mockLibrary._id.toString());
+    });
+
+    it('should throw NotFoundError if library does not exist', async () => {
+      mockedRepo.deleteLibraryFromDB.mockRejectedValue(new NotFoundError('Library'));
+      
+      await expect(libraryService.deleteLibrary(mockLibrary._id.toString()))
+        .rejects
+        .toThrow(NotFoundError);
+    });
+  });
+
+  describe('listLibraries', () => {
+    it('should list all active libraries by default', async () => {
+      mockedRepo.getAllLibraries.mockResolvedValue([mockLibrary]);
+      
+      const result = await libraryService.listLibraries();
+      
+      expect(result).toEqual([mockLibrary]);
+      expect(mockedRepo.getAllLibraries).toHaveBeenCalledWith({ isActive: true });
+    });
+
+    it('should list all libraries when includeInactive is true', async () => {
+      mockedRepo.getAllLibraries.mockResolvedValue([mockLibrary]);
+      
+      const result = await libraryService.listLibraries({ includeInactive: true });
+      
+      expect(result).toEqual([mockLibrary]);
+      expect(mockedRepo.getAllLibraries).toHaveBeenCalledWith({});
     });
   });
 }); 
