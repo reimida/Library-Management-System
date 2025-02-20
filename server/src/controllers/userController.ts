@@ -95,22 +95,11 @@ export const assignLibrarian = asyncHandler(async (req: Request, res: Response) 
     librarianManagementSchema,
     async (data) => {
       validateId(data.libraryId, 'library');
-      try {
-        const updatedUser = await assignUserAsLibrarian(userId, data.libraryId);
-        return {
-          message: 'User assigned as librarian successfully',
-          data: updatedUser
-        };
-      } catch (error) {
-        if (error instanceof ConflictError) {
-          res.status(409).json({
-            success: false,
-            message: error.message
-          });
-          return null;
-        }
-        throw error;
-      }
+      const updatedUser = await assignUserAsLibrarian(userId, data.libraryId);
+      return {
+        message: 'User assigned as librarian successfully',
+        data: updatedUser
+      };
     }
   );
 

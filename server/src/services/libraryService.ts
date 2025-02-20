@@ -8,35 +8,12 @@ import {
   updateLibraryInDB,
 } from '../repositories/libraryRepository';
 import { NotFoundError, ConflictError } from '../utils/errors';
+import { librarySchema, LibraryInput } from '../validations/librarySchemas';
+import type { z } from 'zod';
 
-// Define a base type without Mongoose Document properties
-export interface LibraryData {
-  name: string;
-  libraryCode: string;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-  };
-  operatingHours: {
-    monday: { open: string; close: string };
-    tuesday: { open: string; close: string };
-    wednesday: { open: string; close: string };
-    thursday: { open: string; close: string };
-    friday: { open: string; close: string };
-    saturday?: { open: string; close: string };
-    sunday?: { open: string; close: string };
-  };
-  contactPhone: string;
-  contactEmail: string;
-  totalSeats: number;
-  isActive?: boolean;
-}
-
-export type CreateLibraryInput = LibraryData;
-export type UpdateLibraryInput = Partial<LibraryData>;
+// Define types using Zod inference
+export type CreateLibraryInput = LibraryInput;
+export type UpdateLibraryInput = Partial<LibraryInput>;
 
 export async function createLibrary(libraryData: CreateLibraryInput): Promise<ILibrary> {
   const existingLibrary = await findLibraryByCode(libraryData.libraryCode);

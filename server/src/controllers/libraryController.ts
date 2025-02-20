@@ -30,10 +30,7 @@ export const listLibraries = asyncHandler(async (req: Request, res: Response) =>
   const includeInactive = req.query.includeInactive === 'true';
   const libraries = await libraryService.listLibraries({ includeInactive });
   
-  res.json({
-    success: true,
-    data: libraries
-  });
+  return sendSuccess(res, libraries);
 });
 
 export const updateLibrary = asyncHandler(async (req: Request, res: Response) => {

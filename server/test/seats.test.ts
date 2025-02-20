@@ -156,7 +156,7 @@ describe('Seats API', () => {
         .send(testSeat);
 
       expect(response.status).toBe(409);
-      expect(response.body.errors).toContain('Seat code already exists in this library');
+      expect(response.body.message).toContain('Seat code already exists in this library');
     });
   });
 
