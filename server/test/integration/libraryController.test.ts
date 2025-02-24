@@ -87,8 +87,26 @@ describe('Library Controller Tests', () => {
       });
       const res = mockResponse();
 
+      // Mock the service call
+      jest.spyOn(libraryService, 'listLibraries')
+        .mockResolvedValueOnce([/* mock library data */]);
+
       await libraryController.listLibraries(req as Request, res as Response, mockNext);
       expect(res.json).toHaveBeenCalled();
+      expect(libraryService.listLibraries).toHaveBeenCalledWith({ includeInactive: true });
+    });
+
+    it('should handle service errors', async () => {
+      const req = mockRequest({
+        query: {}
+      });
+      const res = mockResponse();
+
+      jest.spyOn(libraryService, 'listLibraries')
+        .mockRejectedValueOnce(new Error('Database error'));
+
+      await libraryController.listLibraries(req as Request, res as Response, mockNext);
+      expect(res.status).toHaveBeenCalledWith(500);
     });
   });
 }); 

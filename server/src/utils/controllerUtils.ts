@@ -42,23 +42,16 @@ export function handleControllerError(error: unknown, res: Response) {
     });
   }
 
-  // Handle ApiError during transition (can be removed later)
-  if (error instanceof Error && error.name === 'ApiError') {
-    const statusCode = (error as any).statusCode || 500;
-    return res.status(statusCode).json({
-      success: false,
-      message: error.message
+  // Only log errors in non-test environments
+  if (process.env.NODE_ENV !== 'test') {
+    console.error('Controller error:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
     });
   }
-  
-  // Log unexpected errors
-  console.error('Controller error:', {
-    name: error instanceof Error ? error.name : 'Unknown',
-    message: error instanceof Error ? error.message : String(error),
-    stack: error instanceof Error ? error.stack : undefined
-  });
-  
-  return res.status(500).json({ 
+
+  return res.status(500).json({
     success: false,
     message: 'Internal server error'
   });

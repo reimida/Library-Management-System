@@ -12,3 +12,4 @@ prisma/.env
 .vs
 codebase-file.txt
 coverage
+history

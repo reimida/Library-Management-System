@@ -1,31 +1,53 @@
-# Implementation Trace
+# Project History Trace
 
-## Basic Server Setup - Implemented
-
-**Messages:**
-
-*   **feat:** Express.js server initialized in `app.ts`.
-*   **feat:** CORS middleware enabled for cross-origin requests.
-*   **feat:** JSON middleware enabled for parsing request bodies.
-*   **feat:** Server configured to run on port 3000 (or env port) in `server.ts`.
-*   **chore:** Basic project structure setup (controllers, services, models, routes, config).
-
-## User Registration Feature - Implemented
+## Initial Setup & User Registration - Implemented
 
 **Messages:**
 
-*   **feat:** User registration endpoint created at `/users/register`.
-*   **feat:** Implemented input validation for user registration using `zod`.
-*   **feat:** Password hashing implemented using `bcrypt` for user security.
-*   **feat:** Database integration with Mongoose to store new user data.
-*   **feat:** Basic error handling for registration implemented (validation and server errors).
-*   **feat:** Password excluded from registration response for security.
+*   **feat:** Basic Express server setup with CORS and JSON middleware.
+*   **feat:** User registration endpoint (`/users/register`) implemented.
+*   **feat:** Input validation for registration using Zod.
+*   **feat:** Password hashing with bcrypt.
+*   **feat:** Basic error handling for registration.
+*   **feat:** Password excluded from the response.
 
-## User Authentication Feature - Implemented
+## Refactoring - Repository Layer - Implemented
 
 **Messages:**
 
-*   **feat:** User login endpoint created at `/users/login`.
+*   **refactor:** Introduced a repository layer with `userRepository.ts`.
+*   **refactor:** Moved database interaction logic from `userService.ts` to `userRepository.ts`.
+*   **refactor:** Updated `userService.ts` to use `userRepository.ts`, improving separation of concerns.
+*   **fix:** Corrected database interaction in `userRepository.ts` to use Mongoose instead of Prisma.
+
+## Database Migration - Implemented
+
+**Messages:**
+
+*   **refactor:** Migrated database from Prisma to Mongoose.
+*   **chore:** Updated database configuration.
+*   **chore:** Removed Prisma, added Mongoose.
+*   **feat:** Implemented MongoDB connection.
+*   **refactor:** Updated User model to use Mongoose.
+*   **refactor:** Updated repository/service layers for Mongoose.
+
+## Dependency Updates & Configuration - Implemented
+
+**Messages:**
+
+*   **chore:** Updated development dependencies (`@types/node`, `@types/express`, `typescript`, `eslint`, `prettier`).
+*   **chore:** Removed unused dependencies, added `bcryptjs` and `mongoose`.
+*   **chore:** Updated `package.json` scripts.
+*   **feat:** Added dotenv for environment variables.
+*   **feat:** Implemented base API route.
+*   **refactor:** Adjusted to absolute imports.
+*   **chore:** Configured `outDir` and `rootDir` in `tsconfig.json`.
+*   **fix:** Corrected types and versions for dependencies.
+
+## User Login Feature - Implemented
+
+**Messages:**
+* **feat:** User login endpoint created at `/users/login`.
 *   **feat:** Implemented login input validation using `zod` schemas.
 *   **feat:** Implemented login functionality in `userService` and `userController`.
 *   **feat:** Password comparison using `bcrypt` for login authentication.
@@ -36,7 +58,6 @@
 *   **chore:** Updated dependencies to include `@types/mongoose`.
 
 ## User Profile Management Feature - Implemented
-
 **Messages:**
 
 *   **feat:** Implemented `GET /users/profile` endpoint to retrieve user profile.
@@ -50,48 +71,6 @@
 *   **refactor:** Updated `User` model and `IUser` interface to align with Mongoose schema.
 *   **refactor:** Adjusted service and repository layers to use Mongoose for profile operations.
 
-## Library Management Feature - Implemented
-
-**Messages:**
-
-*   **feat:** Created Library model with comprehensive schema including operating hours, address, and seat capacity
-*   **feat:** Implemented CRUD endpoints for library management (`/libraries`)
-*   **feat:** Added role-based access control for library operations
-*   **feat:** Implemented virtual field for real-time library open/closed status
-*   **feat:** Added validation for library operating hours in HH:mm format
-*   **feat:** Created library repository layer with MongoDB operations
-*   **feat:** Implemented library service layer with business logic
-*   **feat:** Added input validation using zod schemas for library operations
-*   **feat:** Implemented error handling for library operations
-
-*   **refactor:** Organized library routes with proper authentication and authorization
-*   **feat:** Added support for filtering active/inactive libraries
-*   **feat:** Implemented library code uniqueness validation
-*   **feat:** Added library status toggle functionality for admins
-
-### Role-Based Access Control
-
-**Messages:**
-
-*   **feat:** Implemented Role enum (USER, LIBRARIAN, ADMIN)
-*   **feat:** Created role middleware for endpoint authorization
-*   **feat:** Added role-based route protection for library management
-*   **feat:** Updated JWT payload to include user role
-*   **test:** Added role-based access control tests for library endpoints
-
-## Schedule Management Feature - In Progress
-
-**Messages:**
-
-* **feat:** Defined schedule data model with regular operating hours and exceptions
-* **feat:** Created schedule repository layer for MongoDB operations
-* **feat:** Implemented schedule service with business logic for:
-  - Regular operating hours management
-  - Holiday/exception handling
-  - Schedule validation against library hours
-* **feat:** Added schedule validation using zod schemas
-* **feat:** Implemented schedule-related endpoints with role-based access
-
 ## Testing - Implemented
 
 ### User Authentication
@@ -104,67 +83,76 @@
 *   **test:** Added integration tests for updating user profile in `updateProfile.test.ts`.
 *   **test:** Added unit tests for login functionality in `userService.test.ts`.
 
-### Library Management Tests
-
-**Messages:**
-
-*   **test:** Added comprehensive test suite in `library.test.ts` for:
-    - Library creation (admin/librarian only)
-    - Library update operations
-    - Library deletion (admin only)
-    - Library retrieval with filters
-    - Role-based access control validation
-*   **test:** Added unit tests for library service methods in `libraryService.test.ts`
-*   **test:** Added validation tests for library input schemas
-*   **test:** Added tests for library code uniqueness constraints
-
 ### Test Infrastructure
 
 **Messages:**
 
 *   **chore:** Added test setup file `setup.ts` for database connection and cleanup.
 *   **chore:** Added `docker-compose.yml` for running tests with a dedicated MongoDB instance.
-*   **chore:** Updated test configuration to support role-based authentication scenarios.
-*   **chore:** Added test utilities for JWT token generation with different roles.
 
-### Files Modified/Created
+## Library Management Feature - Implemented
 
-**Core Implementation:**
-- `src/models/Library.ts` - Library model definition
-- `src/controllers/libraryController.ts` - CRUD operations handling
-- `src/services/libraryService.ts` - Business logic implementation
-- `src/repositories/libraryRepository.ts` - Database operations
-- `src/routes/libraryRoutes.ts` - Route definitions with role protection
-- `src/validations/librarySchemas.ts` - Zod validation schemas
+**Messages:**
 
-**Authentication & Authorization:**
-- `src/middlewares/roleMiddleware.ts` - Role-based access control
-- `src/types/auth.ts` - Role enum and auth types
-- `src/middlewares/authMiddleware.ts` - JWT authentication
+*  **feat:** Added Library Model
+*  **feat:** Implemented library CRUD
+*  **feat:** Role-based access for library
+* **feat:** Library Open/closed status.
+*  **feat:** Validation for operating hours
+*  **feat:** Library repository layer
+* **feat:** Library service layer
+*  **feat:** Input Validation
+* **feat:** Error Handling
+* **refactor:** Organized Library routes.
+* **feat:** Filtering Active/Inactive Libraries
+* **feat:** Unique Library Code
+* **feat:** Library Status Toggle
 
-**Testing:**
-- `test/library.test.ts` - Integration tests
-- `test/libraryService.test.ts` - Unit tests
+### Role-Based Access Control
+
+**Messages:**
+
+* **feat:** Added Role enum.
+* **feat:** Created Role Middleware.
+* **feat:** Protected Routes.
+* **feat:** Updated JWT payload.
+* **test:** Added tests.
 
 ## Librarian Management Feature - Implemented
 
 **Messages:**
+* **feat:** assign and remove librarian roles
+* **feat:** Implemented role-based authorization middleware
+*   **feat:** Added role-based route protection for library management
+* **feat:** librarian assignment to libraries
+* **test**: Added Tests
 
-*   **feat:** Implemented librarian registration endpoint at `/users/librarian/register`
-*   **feat:** Added librarian-specific fields to User model
-*   **feat:** Created librarian validation schemas
-*   **feat:** Implemented librarian profile management endpoints
-*   **feat:** Added role-based access control for librarian operations
-*   **feat:** Implemented librarian assignment to libraries
+## Seat Management Feature - Implemented
+**Messages:**
+* **feat:** implement seat management with repository pattern and comprehensive validation
+* **feat:** implemented seatController, input validation for seats and service interface
+* **feat:** Implement seat routes with auth, integrate into library routes
 
-### Files Modified/Created
+## Standardization and Error Handling - Implemented
+**Messages:**
+* **refactor:** standardize API response format and enhance seat repository validation
+* **refactor:** standardize error handling and response format across controllers
+* **refactor:** enhance library repository error handling and validation
+* **refactor:** improve library and seat input validation and error handling
 
-**Core Implementation:**
-- `src/controllers/userController.ts` - Added librarian-specific endpoints
-- `src/services/userService.ts` - Added librarian management logic
-- `src/repositories/userRepository.ts` - Extended for librarian operations
-- `src/routes/userRoutes.ts` - Added librarian routes
-- `src/validations/librarianSchemas.ts` - Librarian-specific validation
+## Enhancements and Fixes
 
-**Testing:**
-- `test/librarianManagement.test.ts` - Integration tests for librarian features
+- **chore:** Added coverage directory to `.gitignore`.
+- **chore:** Updated `package.json` test script for coverage reports.
+- **refactor:** Improved test documentation and structure.
+- **feat:** Enhanced `testUtils` with mock functions.
+- **refactor:** Simplified library management.
+- **refactor:** Updated API routes, authentication, and testing.
+- **fix:** Corrected Mongoose connection logic.
+- **feat:** Implemented JWT authentication.
+- **chore:** Updated ESLint and Prettier configurations.
+- **docs:** Updated README.md with installation and usage instructions.
+- **feat:** Initialized user routes and controller.
+- **fix:** corrected variable names
+
+==> will have better trace with better model. for the time being we have the workflow, which is good, which is fast

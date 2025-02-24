@@ -12,6 +12,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Should be in 
 
 // Rename to match controller's expected function name
 export async function registerUser(userData: RegisterInput): Promise<IUser> {
+  const existingUser = await userRepository.findUserByEmail(userData.email);
+  if (existingUser) {
+    throw new ConflictError('User with this email already exists');
+  }
+
   const hashedPassword = await hashPassword(userData.password);
 
   const userWithHashedPassword = {
@@ -68,9 +73,7 @@ export async function loginUser(loginData: LoginInput) {
 }
 
 export async function getUserProfile(userId: string) {
-  const user = await userRepository.getUserProfileFromDB(userId);
-  if (!user) throw new NotFoundError('User');
-  return user;
+  return await userRepository.getUserProfileFromDB(userId);
 }
 
 export async function updateUserProfile(
@@ -78,9 +81,6 @@ export async function updateUserProfile(
   updateData: UpdateProfileInput
 ): Promise<IUser> {
   const updatedUser = await userRepository.updateUser(userId, updateData);
-  if (!updatedUser) {
-    throw new NotFoundError('User');
-  }
   
   const userResponse = updatedUser.toObject();
   delete userResponse.password;
@@ -89,18 +89,10 @@ export async function updateUserProfile(
 
 export async function assignUserAsLibrarian(userId: string, libraryId: string): Promise<IUser> {
   const user = await userRepository.getUserById(userId);
-  if (!user) {
-    throw new NotFoundError('User');
-  }
 
   // Check role before checking library to fail fast
   if (user.role === Role.LIBRARIAN) {
     throw new ConflictError('User is already a librarian');
-  }
-
-  const library = await getLibraryById(libraryId);
-  if (!library) {
-    throw new NotFoundError('Library');
   }
 
   const isAlreadyAssigned = await userRepository.isUserAssignedToLibrary(userId, libraryId);
@@ -110,16 +102,14 @@ export async function assignUserAsLibrarian(userId: string, libraryId: string): 
 
   // First update user role
   const updatedUser = await userRepository.updateUserRoleInDB(userId, Role.LIBRARIAN);
-  if (!updatedUser) {
-    throw new BusinessError('Failed to update user role');
-  }
 
   // Then add to library
-  const updatedLibrary = await userRepository.addUserAsLibrarian(userId, libraryId);
-  if (!updatedLibrary) {
+  try {
+    await userRepository.addUserAsLibrarian(userId, libraryId);
+  } catch (error) {
     // Rollback role change if library update fails
     await userRepository.updateUserRoleInDB(userId, Role.USER);
-    throw new BusinessError('Failed to assign librarian to library');
+    throw error;
   }
 
   return updatedUser;
@@ -127,17 +117,9 @@ export async function assignUserAsLibrarian(userId: string, libraryId: string): 
 
 export async function removeUserAsLibrarian(userId: string, libraryId: string): Promise<IUser> {
   const user = await getUserById(userId);
-  if (!user) {
-    throw new NotFoundError('User');
-  }
 
   if (user.role !== Role.LIBRARIAN) {
     throw new BusinessError('User is not a librarian');
-  }
-
-  const library = await getLibraryById(libraryId);
-  if (!library) {
-    throw new NotFoundError('Library');
   }
 
   const isAssigned = await userRepository.isUserAssignedToLibrary(userId, libraryId);
@@ -146,43 +128,21 @@ export async function removeUserAsLibrarian(userId: string, libraryId: string): 
   }
 
   // First remove from library
-  const updatedLibrary = await userRepository.removeUserAsLibrarianFromDB(userId, libraryId);
-  if (!updatedLibrary) {
-    throw new BusinessError('Failed to remove librarian from library');
-  }
+  await userRepository.removeUserAsLibrarianFromDB(userId, libraryId);
 
   // Then update role back to user
-  const updatedUser = await userRepository.updateUserRoleInDB(userId, Role.USER);
-  if (!updatedUser) {
-    throw new NotFoundError('User');
-  }
-
-  return updatedUser;
+  return await userRepository.updateUserRoleInDB(userId, Role.USER);
 }
 
 export async function checkLibrarianAccess(userId: string, libraryId: string): Promise<boolean> {
-  const library = await getLibraryById(libraryId);
-  if (!library) {
-    throw new NotFoundError('Library');
-  }
-
-  return library.librarians.some(
-    librarianId => librarianId.toString() === userId
-  );
+  return await userRepository.isUserAssignedToLibrary(userId, libraryId);
 }
 
 export async function getUserById(userId: string): Promise<IUser> {
   const user = await userRepository.getUserById(userId);
-  if (!user) {
-    throw new NotFoundError('User');
-  }
-  return user;
+  return user; // Now safe because repository throws NotFoundError if user is null
 }
 
-export async function findUserByEmail(email: string): Promise<IUser> {
-  const user = await userRepository.findUserByEmail(email);
-  if (!user) {
-    throw new NotFoundError('User');
-  }
-  return user;
+export async function findUserByEmail(email: string): Promise<IUser | null> {
+  return await userRepository.findUserByEmail(email);
 } 
