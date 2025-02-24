@@ -1,140 +1,124 @@
-# Test Suite Breakdown
+# Test Documentation
 
-Here's a breakdown of each test suite with their specific tests and their assertions in markdown format:
+## Setup (setup.ts)
+Database connection management for testing environment.
 
-## setup.ts
+### Operations
+- `connect()`: Establishes MongoDB connection
+- `clearDatabase()`: Cleans all collections
+- `closeDatabase()`: Drops database and closes connection
 
-This file is for setup and teardown, so it doesn't contain specific tests in the traditional sense. It ensures the test environment is correctly initialized and cleaned up before and after tests.
+## Authentication Module (12 tests)
 
-- beforeAll: Connects to the test database.
-- beforeEach: Clears the database before each test to ensure isolation.
-- afterAll: Closes the database connection after all tests are finished.
+### User Registration (register.test.ts - 3 tests)
 
-## getProfile.test.ts (1 test)
-Actual test:
-- should get the user profile when authenticated
+#### POST /auth/register
+1. Creates new user account (201)
+   - Validates user record creation
+   - Verifies password hashing
+   - Checks response excludes sensitive data
+2. Prevents duplicate email registration (409)
+3. Validates required fields (400)
 
-Assertions tested:
-- should return 401 if no token is provided
-- should return 401 if invalid token is provided
-- should return 200 and user profile if valid token is provided
-- should return user data excluding password and sensitive fields
-- should handle errors and return 500 if something goes wrong
+### User Login (login.test.ts - 4 tests)
 
-## library.test.ts (10 tests)
-Actual tests:
-- should allow admin to create library
-- should not allow librarian to create library
-- should not allow regular user to create library
-- should validate required fields
-- should list all libraries without authentication
-- should filter inactive libraries by default
-- should allow admin to update library
-- should not allow regular user to update library
-- should allow only admin to delete library
-- should not allow librarian to delete library
+#### POST /auth/login
+1. Authenticates valid credentials (200)
+   - Returns valid JWT token
+   - Includes user data
+2. Rejects invalid password (401)
+3. Rejects non-existent user (404)
+4. Validates required fields (400)
 
-Assertions tested for each endpoint:
-### POST /libraries:
-- Authorization checks (admin only)
-- Input validation
-- Successful creation
-- Error handling
+### Profile Management
 
-### GET /libraries:
-- List retrieval
-- Filtering
-- Public access
+#### GET /users/profile (getProfile.test.ts - 2 tests)
+1. Retrieves authenticated user profile (200)
+   - Returns user data
+   - Excludes password
+   - Matches registered data
+2. Rejects unauthenticated access (401)
 
-### PATCH /libraries/:libraryId:
-- Authorization checks (admin and librarian)
-- Librarian ownership validation
-- Input validation
-- Successful update
-- Error handling
+#### PATCH /users/profile (updateProfile.test.ts - 3 tests)
+1. Updates user profile (200)
+   - Persists changes
+   - Returns updated data
+2. Validates update data (400)
+3. Rejects unauthenticated access (401)
 
-### DELETE /libraries/:libraryId:
-- Authorization checks (admin only)
-- Successful deletion
-- Error handling
+## Library Module (21 tests)
 
-## libraryService.test.ts (7 tests)
-Actual tests:
-- should create a library successfully
-- should throw error if library code already exists
-- should update library successfully
-- should throw error if library not found
-- should toggle library status successfully
-- should add librarian to library
-- should remove librarian from library
+### Core Library Operations (library.test.ts - 8 tests)
 
-Service layer assertions:
-- Data validation
-- Error handling
-- Repository interaction
-- Business logic implementation
-- Librarian management
+#### POST /libraries
+1. Admin creates library (201)
+2. Blocks librarian creation (403)
+3. Blocks user creation (403)
+4. Validates required fields (400)
 
-## librarianManagement.test.ts (4 tests)
-Actual tests:
-- should allow admin to assign librarian role
-- should allow admin to remove librarian role
-- should validate library exists before assigning librarian
-- should validate user exists before assigning role
+#### GET /libraries
+1. Lists libraries without auth (200)
+2. Filters inactive libraries
 
-Assertions tested:
-- Authorization checks
-- Role assignment validation
-- Library existence validation
-- User existence validation
-- Error handling
+#### PATCH /libraries/:id
+1. Admin updates library (200)
+2. Blocks unauthorized update (403)
 
-## libraryAccess.test.ts (4 tests)
-Actual tests:
-- should allow librarian to update assigned library
-- should not allow librarian to update unassigned library
-- should allow admin to update any library
-- should maintain librarian assignments after library update
+### Library Service (libraryService.test.ts - 8 tests)
 
-Assertions tested:
-- Authorization checks for librarians
-- Library assignment validation
-- Admin override capabilities
-- Data persistence for librarian assignments
-- Error handling for unauthorized access
+#### Library Management
+1. Creates library successfully
+2. Handles duplicate code conflict
+3. Retrieves library by ID
+4. Handles non-existent library
+5. Updates library data
+6. Handles update conflicts
+7. Deletes library
+8. Lists libraries with filters
 
-## login.test.ts (1 test)
-Actual test:
-- should log in an existing user and return a token
+### Librarian Management (librarianManagement.test.ts - 5 tests)
 
-Assertions tested:
-- Valid credentials handling
-- Invalid credentials handling
-- Token generation
-- Error scenarios
+#### POST /users/:userId/librarian
+1. Assigns librarian role (200)
+2. Prevents duplicate assignment (409)
+3. Handles non-existent library (404)
+4. Blocks non-admin assignment (403)
 
-## register.test.ts (1 test)
-Actual test:
-- should register a new user
+#### DELETE /users/:userId/librarian
+1. Removes librarian role (200)
 
-Assertions tested:
-- Input validation
-- Duplicate email handling
-- Password hashing
-- Response data sanitization
-- Error handling
+## Seat Management (seats.test.ts - 10 tests)
 
-## updateProfile.test.ts (1 test)
-Actual test:
-- should update the user profile when authenticated
+#### POST /libraries/:libraryId/seats
+1. Admin creates seat (201)
+2. Librarian creates in assigned library (201)
+3. Blocks unassigned library access (403)
+4. Validates required fields (400)
+5. Prevents duplicate codes (409)
 
-Assertions tested:
-- Authentication checks
-- Input validation
-- Successful update scenarios
-- Field-specific updates
-- Error handling
+#### GET /libraries/:libraryId/seats
+1. Lists all seats (200)
+2. Filters by status
+3. Filters by floor
 
-Total Test Count: 28 individual tests
+#### PATCH /libraries/:libraryId/seats/:seatId
+1. Updates seat properties (200)
+2. Validates update fields (400)
 
-Note: Each test may contain multiple assertions to thoroughly verify the functionality being tested. The assertions listed under each test describe what aspects are being verified within each test case.
+## Library Access (libraryAccess.test.ts - 8 tests)
+
+### Access Control
+
+#### PATCH /libraries/:libraryId
+1. Librarian updates assigned library (200)
+2. Blocks update on unassigned library (403)
+3. Admin updates any library (200)
+4. Maintains librarian assignments
+
+#### GET /libraries/:libraryId/access
+1. Validates access tokens
+2. Handles expired tokens
+3. Checks role-based permissions
+4. Verifies audit trail
+
+Total Test Count: 51 tests

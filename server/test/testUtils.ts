@@ -1,6 +1,7 @@
 import { ILibrary } from '../src/models/Library';
 import request from 'supertest';
 import app from '../src/app';
+import { Request, Response, NextFunction } from 'express';
 
 export const createTestLibraryData = (overrides = {}): Partial<ILibrary> => ({
   name: 'Test Library',
@@ -50,4 +51,21 @@ export async function getAuthToken(email: string, password: string) {
   }
   
   return response.body.data.token;
-} 
+}
+
+export const mockRequest = (data: any = {}): Partial<Request> => ({
+  body: {},
+  query: {},
+  params: {},
+  ...data
+});
+
+export const mockResponse = (): Partial<Response> => {
+  const res: Partial<Response> = {};
+  res.status = jest.fn().mockReturnValue(res);
+  res.json = jest.fn().mockReturnValue(res);
+  res.send = jest.fn().mockReturnValue(res);
+  return res;
+};
+
+export const mockNext: NextFunction = jest.fn(); 

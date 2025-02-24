@@ -8,9 +8,10 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "pretest": "docker compose up -d || docker-compose up -d",
-    "test": "jest --verbose --detectOpenHandles --runInBand",
+    "test": "jest --verbose --detectOpenHandles --runInBand --coverage --coverageDirectory=test/coverage",
     "test:watch": "jest --verbose --detectOpenHandles --runInBand --watch",
     "posttest": "docker compose down || docker-compose down"
+
   },
   "keywords": [],
   "author": "",

@@ -11,3 +11,4 @@ prisma/.env
 .idea
 .vs
 codebase-file.txt
+coverage
