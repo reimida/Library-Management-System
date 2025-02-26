@@ -1,15 +1,19 @@
 import { Types } from 'mongoose';
 import * as libraryService from '../src/services/libraryService';
 import * as libraryRepo from '../src/repositories/libraryRepository';
+import * as scheduleService from '../src/services/scheduleService';
 import { ILibrary } from '../src/models/Library';
 import { ConflictError, NotFoundError, BusinessError } from '../src/utils/errors';
 import { MongoServerError } from 'mongodb';
 import type { CreateLibraryInput } from '../src/services/libraryService';
 import type { Document } from 'mongoose';
 
+// Mock both repositories
 jest.mock('../src/repositories/libraryRepository');
+jest.mock('../src/services/scheduleService');
 
 const mockedRepo = libraryRepo as jest.Mocked<typeof libraryRepo>;
+const mockedScheduleService = scheduleService as jest.Mocked<typeof scheduleService>;
 
 const mockLibraryInput: CreateLibraryInput = {
   name: 'Test Library',
@@ -20,15 +24,6 @@ const mockLibraryInput: CreateLibraryInput = {
     state: 'TS',
     postalCode: '12345',
     country: 'Test Country'
-  },
-  operatingHours: {
-    monday: { open: '09:00', close: '17:00' },
-    tuesday: { open: '09:00', close: '17:00' },
-    wednesday: { open: '09:00', close: '17:00' },
-    thursday: { open: '09:00', close: '17:00' },
-    friday: { open: '09:00', close: '17:00' },
-    saturday: { open: '10:00', close: '15:00' },
-    sunday: { open: '', close: '' }
   },
   contactPhone: '123-456-7890',
   contactEmail: 'test@library.com',
@@ -115,11 +110,14 @@ describe('Library Service', () => {
   describe('createLibrary', () => {
     it('should create a library successfully', async () => {
       mockedRepo.createLibraryInDB.mockResolvedValue(mockLibrary);
+      // Mock the schedule creation to avoid timeout
+      mockedScheduleService.createSchedule.mockResolvedValue({} as any);
       
       const result = await libraryService.createLibrary(mockLibraryInput);
       
       expect(result).toEqual(mockLibrary);
       expect(mockedRepo.createLibraryInDB).toHaveBeenCalledWith(mockLibraryInput);
+      expect(mockedScheduleService.createSchedule).toHaveBeenCalled();
     });
 
     it('should throw ConflictError if library code already exists', async () => {
@@ -191,15 +189,20 @@ describe('Library Service', () => {
   describe('deleteLibrary', () => {
     it('should delete a library successfully', async () => {
       mockedRepo.deleteLibraryFromDB.mockResolvedValue(mockLibrary);
+      // Mock the schedule deletion to avoid timeout
+      mockedScheduleService.deleteSchedule.mockResolvedValue({} as any);
       
       const result = await libraryService.deleteLibrary(mockLibrary._id.toString());
       
       expect(result).toEqual(mockLibrary);
       expect(mockedRepo.deleteLibraryFromDB).toHaveBeenCalledWith(mockLibrary._id.toString());
+      expect(mockedScheduleService.deleteSchedule).toHaveBeenCalledWith(mockLibrary._id.toString());
     });
 
     it('should throw NotFoundError if library does not exist', async () => {
       mockedRepo.deleteLibraryFromDB.mockRejectedValue(new NotFoundError('Library'));
+      // Mock the schedule deletion to avoid timeout
+      mockedScheduleService.deleteSchedule.mockResolvedValue({} as any);
       
       await expect(libraryService.deleteLibrary(mockLibrary._id.toString()))
         .rejects

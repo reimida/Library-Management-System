@@ -154,18 +154,39 @@ The system has three roles with different permissions:
     - 403: Not authorized
     - 404: Library not found
 
-## Schedules API (Next to Implement)
+## Schedules API
 
 ### Public Endpoints
 - GET /libraries/:libraryId/schedule
-  - Get library schedule
-  - Returns: operating hours and exceptions
+  - Get library's regular weekly schedule
+  - Returns: {
+    monday: { open: string, close: string }
+    tuesday: { open: string, close: string }
+    wednesday: { open: string, close: string }
+    thursday: { open: string, close: string }
+    friday: { open: string, close: string }
+    saturday?: { open: string, close: string }
+    sunday?: { open: string, close: string }
+  }
 
-### Admin/Librarian Only
+### Admin/Librarian Only Endpoints
 - PUT /libraries/:libraryId/schedule
-  - Update library schedule
-  - Body: operatingHours, exceptions
-  - Required for: seat availability and reservation validation
+  - Update library's regular weekly schedule
+  - Auth: Bearer token (ADMIN or assigned LIBRARIAN)
+  - Body: {
+    monday: { open: "HH:mm", close: "HH:mm" } (required)
+    tuesday: { open: "HH:mm", close: "HH:mm" } (required)
+    wednesday: { open: "HH:mm", close: "HH:mm" } (required)
+    thursday: { open: "HH:mm", close: "HH:mm" } (required)
+    friday: { open: "HH:mm", close: "HH:mm" } (required)
+    saturday?: { open: "HH:mm", close: "HH:mm" }
+    sunday?: { open: "HH:mm", close: "HH:mm" }
+  }
+  - Returns: Updated schedule object
+  - Errors:
+    - 400: Invalid input (time format, missing required days)
+    - 403: Not authorized for this library
+    - 404: Library not found
 
 ## Seats API
 
@@ -235,26 +256,11 @@ The system has three roles with different permissions:
 
 ## Reservations API (Final Module)
 
-### User Endpoints
-- GET /reservations/me
-  - List user's reservations
-  - Query params: status, date
-  - Note: Filtered by authenticated user
+# User endpoints
+GET /users/me/reservations         // List my reservations
+POST /users/me/reservations        // Create a reservation (body includes seatId)
+DELETE /users/me/reservations/:id  // Cancel my reservation
 
-- POST /seats/:seatId/reservations
-  - Create reservation
-  - Body: startTime, endTime
-  - Validation:
-    - Seat availability
-    - Library schedule
-    - Operating hours
-
-- DELETE /reservations/:reservationId
-  - Cancel reservation
-  - Note: Only for future reservations
-
-### Admin/Librarian Only
-- GET /reservations
-  - List all reservations
-  - Query params: userId, seatId, libraryId, status, date
-  - Note: Full filtering capabilities 
+# Admin/Librarian endpoints
+GET /libraries/:libraryId/reservations  // List reservations by library
+GET /seats/:seatId/reservations         // List reservations by seat

@@ -19,13 +19,6 @@ describe('Library Repository Tests', () => {
       postalCode: '12345',
       country: 'Test Country'
     },
-    operatingHours: {
-      monday: { open: '09:00', close: '17:00' },
-      tuesday: { open: '09:00', close: '17:00' },
-      wednesday: { open: '09:00', close: '17:00' },
-      thursday: { open: '09:00', close: '17:00' },
-      friday: { open: '09:00', close: '17:00' }
-    },
     contactPhone: '+1234567890',
     contactEmail: 'test@library.com',
     totalSeats: 100,

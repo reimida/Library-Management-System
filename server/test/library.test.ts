@@ -38,13 +38,6 @@ describe('Library API', () => {
       postalCode: '12345',
       country: 'Test Country'
     },
-    operatingHours: {
-      monday: { open: '09:00', close: '17:00' },
-      tuesday: { open: '09:00', close: '17:00' },
-      wednesday: { open: '09:00', close: '17:00' },
-      thursday: { open: '09:00', close: '17:00' },
-      friday: { open: '09:00', close: '17:00' }
-    },
     contactPhone: '+1234567890',
     contactEmail: 'test@library.com',
     totalSeats: 100
@@ -146,8 +139,23 @@ describe('Library API', () => {
     let libraryId: string;
 
     beforeEach(async () => {
+      // Create a library and its schedule for testing deletion
       const library = await Library.create(testLibrary);
       libraryId = library._id.toString();
+      
+      // Create a schedule for this library to avoid 404 when deleting
+      await request(app)
+        .post(`/libraries/${libraryId}/schedule`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          schedule: {
+            monday: { open: '09:00', close: '17:00' },
+            tuesday: { open: '09:00', close: '17:00' },
+            wednesday: { open: '09:00', close: '17:00' },
+            thursday: { open: '09:00', close: '17:00' },
+            friday: { open: '09:00', close: '17:00' }
+          }
+        });
     });
 
     it('should allow only admin to delete library', async () => {
