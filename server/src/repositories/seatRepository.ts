@@ -19,7 +19,7 @@ export class SeatRepository {
   }
 
   async findById(libraryId: string, seatId: string) {
-    if (!mongoose.Types.ObjectId.isValid(libraryId)) {
+    if (libraryId && !mongoose.Types.ObjectId.isValid(libraryId)) {
       throw new BusinessError('Invalid library ID');
     }
     
@@ -27,10 +27,13 @@ export class SeatRepository {
       throw new BusinessError('Invalid seat ID');
     }
     
-    const seat = await Seat.findOne({ 
-      _id: new mongoose.Types.ObjectId(seatId), 
-      libraryId 
-    });
+    const query: any = { _id: new mongoose.Types.ObjectId(seatId) };
+    
+    if (libraryId) {
+      query.libraryId = libraryId;
+    }
+    
+    const seat = await Seat.findOne(query);
     
     if (!seat) {
       throw new NotFoundError('Seat');

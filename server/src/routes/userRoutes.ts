@@ -10,6 +10,7 @@ import {
 import { authenticate } from "../middlewares/authMiddleware";
 import { authorize } from "../middlewares/roleMiddleware";
 import { Role } from "../types/auth";
+import { userReservationRouter } from "./reservationRoutes";
 
 const router = Router();
 
@@ -35,5 +36,8 @@ router.delete(
   authorize([Role.ADMIN]),
   removeLibrarian
 );
+
+// Mount user reservation routes
+router.use('/', userReservationRouter);
 
 export default router; 

@@ -12,6 +12,7 @@ import {
 } from '../controllers/libraryController';
 import seatRoutes from './seatRoutes';
 import scheduleRoutes from './scheduleRoutes';
+import { libraryReservationRouter } from './reservationRoutes';
 
 const router = Router();
 
@@ -38,5 +39,7 @@ router.delete('/:libraryId', authenticate, authorize([Role.ADMIN]), deleteLibrar
 router.use('/:libraryId/seats', seatRoutes);
 // Mount schedule router
 router.use('/:libraryId/schedule', scheduleRoutes);
+// Mount reservation router
+router.use('/:libraryId', libraryReservationRouter);
 
 export default router; 

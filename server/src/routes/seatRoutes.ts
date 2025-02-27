@@ -4,6 +4,7 @@ import { authorize } from '../middlewares/roleMiddleware';
 import { checkLibrarianOwnership } from '../middlewares/checkLibrarianOwnership';
 import { Role } from '../types/auth';
 import * as seatController from '../controllers/seatController';
+import { seatReservationRouter } from './reservationRoutes';
 
 // mergeParams allows access to libraryId from parent router
 const router = express.Router({ mergeParams: true });
@@ -69,5 +70,7 @@ router.patch(
   },
   seatController.updateSeat
 );
+
+router.use('/:seatId', seatReservationRouter);
 
 export default router; 
