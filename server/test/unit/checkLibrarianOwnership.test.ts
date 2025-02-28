@@ -1,17 +1,14 @@
 import { checkLibrarianOwnership } from '../../src/middlewares/checkLibrarianOwnership';
-import { getUserById } from '../../src/repositories/userRepository';
-import { checkLibrarianAccess } from '../../src/services/userService';
+import * as userService from '../../src/services/userService';
 import { BusinessError } from '../../src/utils/errors';
 import { Role } from '../../src/types/auth';
 import { Request, Response } from 'express';
 import { IUser } from '../../src/models/User';
-import { checkLibrarianOwnership as rawMiddleware } from '../../src/middlewares/checkLibrarianOwnership';
 
-jest.mock('../../src/repositories/userRepository');
 jest.mock('../../src/services/userService');
 
-const mockedGetUserById = getUserById as jest.MockedFunction<typeof getUserById>;
-const mockedCheckAccess = checkLibrarianAccess as jest.MockedFunction<typeof checkLibrarianAccess>;
+const mockedGetUserById = jest.spyOn(userService, 'getUserById');
+const mockedCheckAccess = jest.spyOn(userService, 'checkLibrarianAccess');
 
 describe('checkLibrarianOwnership Middleware', () => {
   let mockRequest: Partial<Request>;

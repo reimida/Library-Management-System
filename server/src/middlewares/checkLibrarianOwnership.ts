@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { BusinessError } from '../utils/errors';
-import { getLibraryById } from '../repositories/libraryRepository';
 import { asyncHandler } from '../utils/asyncHandler';
-import { getUserById } from '../repositories/userRepository';
-import { checkLibrarianAccess } from '../services/userService';
-import { SeatRepository } from '../repositories/seatRepository';
-
-const seatRepository = new SeatRepository();
+import * as userService from '../services/userService';
+import * as seatService from '../services/seatService';
+import { Role } from '../types/auth';
 
 export const checkLibrarianOwnership = asyncHandler(async (
   req: Request,
@@ -25,7 +22,8 @@ export const checkLibrarianOwnership = asyncHandler(async (
   // If we have a seatId but no libraryId, get the libraryId from the seat
   if (!libraryId && seatId) {
     try {
-      const seat = await seatRepository.findById("", seatId);
+      // Use service layer to get seat information
+      const seat = await seatService.getSeatById("", seatId);
       libraryId = seat.libraryId.toString();
     } catch (error) {
       // If seat not found, pass to the next middleware which will handle the 404
@@ -38,19 +36,26 @@ export const checkLibrarianOwnership = asyncHandler(async (
     throw new BusinessError('Library ID is required');
   }
 
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new BusinessError('User not found');
-  }
+  try {
+    // Use service layer for user operations
+    const user = await userService.getUserById(userId);
+    
+    // Admin bypass - admins can access any library
+    if (user.role === Role.ADMIN) {
+      return next();
+    }
 
-  if (user.role === 'admin') {
-    return next();
-  }
+    // Check if the librarian has access to this specific library
+    const hasAccess = await userService.checkLibrarianAccess(userId, libraryId);
+    if (!hasAccess) {
+      throw new BusinessError('Not authorized to manage this library');
+    }
 
-  const isLibrarian = await checkLibrarianAccess(userId, libraryId);
-  if (!isLibrarian) {
-    throw new BusinessError('Not authorized to manage this library');
+    next();
+  } catch (error) {
+    if (error instanceof BusinessError) {
+      throw error;
+    }
+    throw new BusinessError(error instanceof Error ? error.message : 'User not found');
   }
-
-  next();
 }); 
