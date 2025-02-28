@@ -10,6 +10,14 @@ export const ReservationSchema = z.object({
     path: ["endTime"],
 });
 
+// Schema for filtering reservations
+export const ReservationFilterSchema = z.object({
+  status: z.enum([ReservationStatus.ACTIVE, ReservationStatus.CANCELLED, ReservationStatus.COMPLETED]).optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional()
+});
+
 export type ReservationInput = z.infer<typeof ReservationSchema>;
+export type ReservationFilterInput = z.infer<typeof ReservationFilterSchema>;
 
 //export type UpdateReservationInput = z.infer<typeof UpdateReservationSchema>; 

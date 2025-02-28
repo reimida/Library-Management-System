@@ -24,32 +24,61 @@ export class ReservationRepository {
         return reservation;
     }
 
-    async getAllUserReservations(userId: string): Promise<IReservation[]> {
+    async getUserReservations(userId: string, status?: ReservationStatus): Promise<IReservation[]> {
         if (!Types.ObjectId.isValid(userId)) {
             throw new BusinessError('Invalid user ID');
         }
 
-        return Reservation.find({ userId }).populate('seatId'); // Consider populate for seat details
+        const query: any = { userId };
+        if (status) {
+            query.status = status;
+        }
+
+        return Reservation.find(query).populate('seatId');
     }
 
-    async getAllLibraryReservations(libraryId: string): Promise<IReservation[]> {
+    async getLibraryReservations(libraryId: string, status?: ReservationStatus): Promise<IReservation[]> {
         if (!Types.ObjectId.isValid(libraryId)) {
             throw new BusinessError('Invalid library ID');
         }
 
-        //This query is dependent of Seat having the libraryId, otherwise we cannot know which reservations belong to a library
-        return Reservation.find({}).populate({
+        // First get all reservations and populate seat data
+        const query = Reservation.find({});
+        if (status) {
+            query.where('status').equals(status);
+        }
+
+        // This query is dependent on Seat having the libraryId
+        return query.populate({
           path: 'seatId',
           match: { libraryId: libraryId },
         }).then(reservations => reservations.filter(reservation => reservation.seatId !== null));
     }
 
-    async getAllSeatReservations(seatId: string): Promise<IReservation[]> {
+    async getSeatReservations(
+        seatId: string, 
+        filters?: { 
+            startDate?: Date; 
+            endDate?: Date; 
+            status?: ReservationStatus 
+        }
+    ): Promise<IReservation[]> {
         if (!Types.ObjectId.isValid(seatId)) {
             throw new BusinessError('Invalid seat ID');
         }
 
-        return Reservation.find({ seatId });
+        const query: any = { seatId };
+        
+        if (filters?.status) {
+            query.status = filters.status;
+        }
+        
+        if (filters?.startDate && filters?.endDate) {
+            query.startTime = { $gte: filters.startDate };
+            query.endTime = { $lte: filters.endDate };
+        }
+
+        return Reservation.find(query);
     }
 
     async updateStatus(id: string, status: ReservationStatus): Promise<IReservation> {

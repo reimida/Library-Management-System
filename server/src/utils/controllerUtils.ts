@@ -63,13 +63,11 @@ export async function validateAndExecute<T>(
   schema: z.ZodSchema<T>,
   handler: (data: T) => Promise<any>
 ) {
-  try {
-    const validatedData = schema.parse(req.body);
-    return await handler(validatedData);
-  } catch (error) {
-    handleControllerError(error, res);
-    return null;
-  }
+  // Parse and validate the request body
+  const validatedData = schema.parse(req.body);
+  
+  // Execute the handler with validated data
+  return await handler(validatedData);
 }
 
 export function sendSuccess(
@@ -105,4 +103,21 @@ export function validateId(id: string, entityName: string, schema: z.ZodSchema =
 // MongoDB-specific ID validation
 export function validateMongoId(id: string, entityName: string) {
   validateId(id, entityName, mongoIdSchema);
+}
+
+/**
+ * Generic function to execute a handler with validation
+ * This can be used for any type of validation, not just request body validation
+ */
+export async function executeWithValidation(
+  req: Request,
+  res: Response,
+  validationFn: () => void, // Synchronous validation function
+  handlerFn: () => Promise<any> // Async handler function
+) {
+  // Run validation first
+  validationFn();
+  
+  // Then execute handler
+  return await handlerFn();
 } 
