@@ -4,7 +4,7 @@ import * as libraryService from '../services/libraryService';
 import { librarySchema, validateLibraryInput, updateLibrarySchema } from '../validations/librarySchemas';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ZodError } from 'zod';
-import { validateAndExecute, sendSuccess, validateId } from '../utils/controllerUtils';
+import { validateAndExecute, sendSuccess, validateId, executeWithValidation } from '../utils/controllerUtils';
 
 export const createLibrary = asyncHandler(async (req: Request, res: Response) => {
   return validateAndExecute(
@@ -20,41 +20,68 @@ export const createLibrary = asyncHandler(async (req: Request, res: Response) =>
 
 export const getLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { libraryId } = req.params;
-  validateId(libraryId, 'library');
   
-  const library = await libraryService.getLibrary(libraryId);
-  return sendSuccess(res, library);
+  return executeWithValidation(
+    req,
+    res,
+    () => {
+      // Validation logic
+      validateId(libraryId, 'library');
+    },
+    async () => {
+      // Handler logic
+      const library = await libraryService.getLibrary(libraryId);
+      return sendSuccess(res, library);
+    }
+  );
 });
 
 export const listLibraries = asyncHandler(async (req: Request, res: Response) => {
   const includeInactive = req.query.includeInactive === 'true';
-  const libraries = await libraryService.listLibraries({ includeInactive });
   
-  return sendSuccess(res, libraries);
+  return executeWithValidation(
+    req,
+    res,
+    () => {
+      // No validation needed for this endpoint
+    },
+    async () => {
+      // Handler logic
+      const libraries = await libraryService.listLibraries({ includeInactive });
+      return sendSuccess(res, libraries);
+    }
+  );
 });
 
 export const updateLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { libraryId } = req.params;
-  validateId(libraryId, 'library');
-
-  const library = await validateAndExecute(
+  
+  return validateAndExecute(
     req,
     res,
     updateLibrarySchema,
     async (data) => {
-      return await libraryService.updateLibrary(libraryId, data);
+      validateId(libraryId, 'library');
+      const updatedLibrary = await libraryService.updateLibrary(libraryId, data);
+      return sendSuccess(res, updatedLibrary, 'Library updated successfully');
     }
   );
-
-  if (library) {
-    return sendSuccess(res, library, 'Library updated successfully');
-  }
 });
 
 export const deleteLibrary = asyncHandler(async (req: Request, res: Response) => {
   const { libraryId } = req.params;
-  validateId(libraryId, 'library');
   
-  await libraryService.deleteLibrary(libraryId);
-  return sendSuccess(res, null, 'Library deleted successfully', 204);
+  return executeWithValidation(
+    req,
+    res,
+    () => {
+      // Validation logic
+      validateId(libraryId, 'library');
+    },
+    async () => {
+      // Handler logic
+      await libraryService.deleteLibrary(libraryId);
+      return sendSuccess(res, null, 'Library deleted successfully', 204);
+    }
+  );
 }); 
