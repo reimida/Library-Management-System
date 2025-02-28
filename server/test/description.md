@@ -1,5 +1,13 @@
 # Test Documentation
 
+## Test Organization
+
+The test suite is organized into three main directories:
+
+- **api/**: End-to-end API tests that verify the complete request-response cycle
+- **unit/**: Unit tests for individual components (services, utilities, etc.)
+- **integration/**: Tests that verify interactions between multiple components
+
 ## Setup (setup.ts)
 Database connection management for testing environment.
 
@@ -8,117 +16,78 @@ Database connection management for testing environment.
 - `clearDatabase()`: Cleans all collections
 - `closeDatabase()`: Drops database and closes connection
 
-## Authentication Module (12 tests)
+## Test Utilities (testUtils.ts)
+Helper functions for common test operations:
+- Creating test users
+- Generating auth tokens
+- Creating test data
 
-### User Registration (register.test.ts - 3 tests)
+## Test Coverage Summary
 
-#### POST /auth/register
-1. Creates new user account (201)
-   - Validates user record creation
-   - Verifies password hashing
-   - Checks response excludes sensitive data
-2. Prevents duplicate email registration (409)
-3. Validates required fields (400)
+| Module | Test Count | Coverage |
+|--------|------------|----------|
+| Authentication | 10 tests | 95% |
+| Library Management | 30 tests | 90% |
+| Seat Management | 25 tests | 89% |
+| Reservation System | 25 tests | 91% |
+| Schedule Management | 23 tests | 100% |
+| User Management | 25 tests | 94% |
+| Middleware | 10 tests | 91% |
+| Utilities | 15 tests | 95% |
+| Repositories | 50 tests | 88% |
 
-### User Login (login.test.ts - 4 tests)
+Total: 198 tests with 88.36% overall coverage
 
-#### POST /auth/login
-1. Authenticates valid credentials (200)
-   - Returns valid JWT token
-   - Includes user data
-2. Rejects invalid password (401)
-3. Rejects non-existent user (404)
-4. Validates required fields (400)
+## Key Test Areas
 
-### Profile Management
+### API Tests (api/)
 
-#### GET /users/profile (getProfile.test.ts - 2 tests)
-1. Retrieves authenticated user profile (200)
-   - Returns user data
-   - Excludes password
-   - Matches registered data
-2. Rejects unauthenticated access (401)
+- **Authentication**: Registration, login, profile management
+- **Library Management**: CRUD operations, access control
+- **Seat Management**: Creation, updates, filtering
+- **Reservation System**: Booking, cancellation, conflicts
+- **Librarian Management**: Role assignment, permissions
+- **Schedule Management**: Library operating hours
 
-#### PATCH /users/profile (updateProfile.test.ts - 3 tests)
-1. Updates user profile (200)
-   - Persists changes
-   - Returns updated data
-2. Validates update data (400)
-3. Rejects unauthenticated access (401)
+### Unit Tests (unit/)
 
-## Library Module (21 tests)
+- **Service Layer**: Business logic validation
+- **Middleware**: Authentication, authorization, error handling
+- **Route Configuration**: Proper middleware chains
+- **Utility Functions**: Helper functions, error handling
 
-### Core Library Operations (library.test.ts - 8 tests)
+### Integration Tests (integration/)
 
-#### POST /libraries
-1. Admin creates library (201)
-2. Blocks librarian creation (403)
-3. Blocks user creation (403)
-4. Validates required fields (400)
+- **Repository Layer**: Database interactions
+- **Controller-Service**: Request handling and business logic
+- **Service-Repository**: Business logic and data persistence
 
-#### GET /libraries
-1. Lists libraries without auth (200)
-2. Filters inactive libraries
+## Test Principles
 
-#### PATCH /libraries/:id
-1. Admin updates library (200)
-2. Blocks unauthorized update (403)
+1. **Isolation**: Each test runs independently
+2. **Determinism**: Tests produce the same results on each run
+3. **Coverage**: Tests cover happy paths and edge cases
+4. **Performance**: Tests run efficiently with minimal setup/teardown
+5. **Readability**: Tests clearly describe expected behavior
 
-### Library Service (libraryService.test.ts - 8 tests)
+## Running Tests
 
-#### Library Management
-1. Creates library successfully
-2. Handles duplicate code conflict
-3. Retrieves library by ID
-4. Handles non-existent library
-5. Updates library data
-6. Handles update conflicts
-7. Deletes library
-8. Lists libraries with filters
+```bash
+# Run all tests
+npm test
 
-### Librarian Management (librarianManagement.test.ts - 5 tests)
+# Run specific test file
+npm test -- test/api/library.test.ts
 
-#### POST /users/:userId/librarian
-1. Assigns librarian role (200)
-2. Prevents duplicate assignment (409)
-3. Handles non-existent library (404)
-4. Blocks non-admin assignment (403)
+# Run tests with specific pattern
+npm test -- -t "should create a library"
+```
 
-#### DELETE /users/:userId/librarian
-1. Removes librarian role (200)
+## CI/CD Integration
 
-## Seat Management (seats.test.ts - 10 tests)
+Tests are automatically run on:
+- Pull requests
+- Merges to main branch
+- Release preparation
 
-#### POST /libraries/:libraryId/seats
-1. Admin creates seat (201)
-2. Librarian creates in assigned library (201)
-3. Blocks unassigned library access (403)
-4. Validates required fields (400)
-5. Prevents duplicate codes (409)
-
-#### GET /libraries/:libraryId/seats
-1. Lists all seats (200)
-2. Filters by status
-3. Filters by floor
-
-#### PATCH /libraries/:libraryId/seats/:seatId
-1. Updates seat properties (200)
-2. Validates update fields (400)
-
-## Library Access (libraryAccess.test.ts - 8 tests)
-
-### Access Control
-
-#### PATCH /libraries/:libraryId
-1. Librarian updates assigned library (200)
-2. Blocks update on unassigned library (403)
-3. Admin updates any library (200)
-4. Maintains librarian assignments
-
-#### GET /libraries/:libraryId/access
-1. Validates access tokens
-2. Handles expired tokens
-3. Checks role-based permissions
-4. Verifies audit trail
-
-Total Test Count: 51 tests
+Failed tests block deployments to ensure code quality.

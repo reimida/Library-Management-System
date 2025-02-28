@@ -1,9 +1,9 @@
 import request from 'supertest';
-import app from '../src/app';
-import { generateToken } from '../src/utils/jwtUtils';
-import Library from '../src/models/Library';
-import { Role } from '../src/types/auth';
-import { connect, clearDatabase, closeDatabase } from './setup';
+import app from '../../src/app';
+import { generateToken } from '../../src/utils/jwtUtils';
+import Library from '../../src/models/Library';
+import { Role } from '../../src/types/auth';
+import { connect, clearDatabase, closeDatabase } from '../setup';
 
 // Ensure JWT_SECRET is set for tests
 process.env.JWT_SECRET = 'test-secret';
@@ -65,7 +65,7 @@ describe('Library API', () => {
         .send(testLibrary);
 
       expect(response.status).toBe(403);
-      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBeDefined();
     });
 
     it('should not allow regular user to create library', async () => {

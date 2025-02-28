@@ -140,6 +140,34 @@
 * **refactor:** enhance library repository error handling and validation
 * **refactor:** improve library and seat input validation and error handling
 
+## Reservation System Enhancement - Implemented
+**Messages:**
+* **refactor:** Enhance reservation system with improved validation and error handling
+* **refactor:** Refactored reservation controllers to use new validation utilities
+* **refactor:** Updated repository methods to support more flexible filtering
+* **refactor:** Simplified service layer logic with improved error handling
+* **feat:** Added new validation schemas for reservation filtering
+* **feat:** Introduced generic validation and execution utility functions
+* **feat:** Improved type safety and error handling across reservation modules
+
+## Controller Standardization - Implemented
+**Messages:**
+* **refactor:** Standardize controller validation and error handling across modules
+* **feat:** Introduced `executeWithValidation` utility for consistent validation and error handling
+* **refactor:** Refactored library, schedule, seat, and user controllers to use new validation pattern
+* **refactor:** Simplified controller logic by separating validation and handler logic
+* **refactor:** Improved error handling and response consistency across different controller methods
+* **refactor:** Removed redundant validation and success response patterns
+
+## Middleware Improvements - Implemented
+**Messages:**
+* **refactor:** Improve checkLibrarianOwnership middleware with service layer integration
+* **refactor:** Migrated middleware to use service layer methods for user and seat operations
+* **refactor:** Simplified imports and removed direct repository dependencies
+* **refactor:** Enhanced error handling with more robust try-catch mechanism
+* **feat:** Added admin role bypass for library access
+* **feat:** Improved type safety and error reporting
+
 ## Enhancements and Fixes
 
 - **chore:** Added coverage directory to `.gitignore`.

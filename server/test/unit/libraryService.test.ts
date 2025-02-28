@@ -1,16 +1,16 @@
 import { Types } from 'mongoose';
-import * as libraryService from '../src/services/libraryService';
-import * as libraryRepo from '../src/repositories/libraryRepository';
-import * as scheduleService from '../src/services/scheduleService';
-import { ILibrary } from '../src/models/Library';
-import { ConflictError, NotFoundError, BusinessError } from '../src/utils/errors';
+import * as libraryService from '../../src/services/libraryService';
+import * as libraryRepo from '../../src/repositories/libraryRepository';
+import * as scheduleService from '../../src/services/scheduleService';
+import { ILibrary } from '../../src/models/Library';
+import { ConflictError, NotFoundError, BusinessError } from '../../src/utils/errors';
 import { MongoServerError } from 'mongodb';
-import type { CreateLibraryInput } from '../src/services/libraryService';
+import type { CreateLibraryInput } from '../../src/services/libraryService';
 import type { Document } from 'mongoose';
 
 // Mock both repositories
-jest.mock('../src/repositories/libraryRepository');
-jest.mock('../src/services/scheduleService');
+jest.mock('../../src/repositories/libraryRepository');
+jest.mock('../../src/services/scheduleService');
 
 const mockedRepo = libraryRepo as jest.Mocked<typeof libraryRepo>;
 const mockedScheduleService = scheduleService as jest.Mocked<typeof scheduleService>;

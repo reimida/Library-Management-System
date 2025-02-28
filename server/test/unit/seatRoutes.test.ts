@@ -39,9 +39,18 @@ describe('Seat Routes', () => {
     jest.clearAllMocks();
     
     // Mock middleware behavior
-    mockedAuthenticate.mockImplementation((req, res, next) => Promise.resolve(next()));
-    mockedAuthorize.mockReturnValue((req, res, next) => Promise.resolve(next()));
-    mockedCheckOwnership.mockImplementation((req, res, next) => Promise.resolve(next()));
+    mockedAuthenticate.mockImplementation((req, res, next) => {
+      next();
+      return undefined;
+    });
+    mockedAuthorize.mockReturnValue((req, res, next) => {
+      next();
+      return undefined;
+    });
+    mockedCheckOwnership.mockImplementation(async (req, res, next) => {
+      next();
+      return Promise.resolve();
+    });
     mockedCreateSeat.mockImplementation(async (req, res) => {
       res.status(200).json({ success: true });
       return Promise.resolve();
@@ -113,9 +122,10 @@ describe('Seat Routes', () => {
     
     it('should check librarian ownership for librarians in POST route', async () => {
       // Mock the request to include librarian role
-      mockedAuthorize.mockReturnValue(async (req, res, next) => {
+      mockedAuthorize.mockReturnValue((req, res, next) => {
         req.user = { userId: 'lib123', email: 'lib@test.com', role: Role.LIBRARIAN };
         next();
+        return undefined;
       });
       
       await request(app).post('/library123/seats').send({});

@@ -1,7 +1,7 @@
 import request from 'supertest';
-import app from '../src/app';
-import { createTestUser, getAuthToken } from './testUtils';
-import { connect, clearDatabase, closeDatabase } from './setup';
+import app from '../../src/app';
+import { createTestUser, getAuthToken } from '../testUtils';
+import { connect, clearDatabase, closeDatabase } from '../setup';
 
 beforeAll(async () => await connect());
 afterEach(async () => await clearDatabase());

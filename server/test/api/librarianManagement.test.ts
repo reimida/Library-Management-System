@@ -1,12 +1,12 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-import app from '../src/app';
-import { generateToken } from '../src/utils/jwtUtils';
-import { Role } from '../src/types/auth';
-import { connect, clearDatabase, closeDatabase } from './setup';
-import User from '../src/models/User';
-import Library from '../src/models/Library';
-import { createTestLibraryData } from './testUtils';
+import app from '../../src/app';
+import { generateToken } from '../../src/utils/jwtUtils';
+import { Role } from '../../src/types/auth';
+import { connect, clearDatabase, closeDatabase } from '../setup';
+import User from '../../src/models/User';
+import Library from '../../src/models/Library';
+import { createTestLibraryData } from '../testUtils';
 
 describe('Librarian Management', () => {
   let adminToken: string;
