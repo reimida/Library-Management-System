@@ -20,10 +20,10 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use("/api/v1/users", userRoutes);
-app.use('/api/v1/libraries', libraryRoutes);
-app.use('/api/v1/seats', seatRoutes);
-app.use('/api/v1/reservations', userReservationRouter);
+app.use("/users", userRoutes);
+app.use('/libraries', libraryRoutes);
+app.use('/seats', seatRoutes);
+app.use('/reservations', userReservationRouter);
 // Schedule routes are handled within library routes
 
 export default app; 

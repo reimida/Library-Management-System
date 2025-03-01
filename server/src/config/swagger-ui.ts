@@ -16,5 +16,5 @@ export function setupSwagger(app: Application): void {
     res.send(swaggerSpec);
   });
 
-  console.log('Swagger UI available at /api-docs');
+  //console.log('Swagger UI available at /api-docs');
 } 

@@ -71,48 +71,48 @@ The project follows a clean architecture approach with clear separation of conce
 ### Installation
 
 1. Clone the repository:
-   ```bash
-   git clone <repository-url>
+    ```bash
+    git clone <repository-url>
    cd library-seats-booking
-   ```
+    ```
 
 2. Install dependencies:
-   ```bash
+    ```bash
    cd server
-   npm install
-   ```
+    npm install
+    ```
 
 ### Configuration
 
 1. **Environment Variables:**
    - Create a `.env` file in the `server/` directory.
    - Add your MongoDB connection string and JWT secret. Example:
-     ```env
-     DATABASE_URL=mongodb://localhost:27017/library_seats
+        ```env
+        DATABASE_URL=mongodb://localhost:27017/library_seats
      JWT_SECRET=your_jwt_secret_key
-     PORT=3000 # Optional: to run on a different port
-     ```
+        PORT=3000 # Optional: to run on a different port
+        ```
 
 2. **Database:**
    - Ensure MongoDB is installed and running. You can start it locally using:
-     ```bash
-     mongod
-     ```
-     (Make sure MongoDB `bin` directory is in your system's `PATH`)
+        ```bash
+        mongod
+        ```
+        (Make sure MongoDB `bin` directory is in your system's `PATH`)
 
-     OR
+        OR
 
      ```bash
-     sudo systemctl start mongod
+        sudo systemctl start mongod
      ```
 
 ### Running the Backend
 
 1. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-   This will start the server using `ts-node-dev` for automatic restarting on code changes. The server will be accessible at `http://localhost:3000` (or the port specified in your `.env` file).
+    ```bash
+    npm run dev
+    ```
+    This will start the server using `ts-node-dev` for automatic restarting on code changes. The server will be accessible at `http://localhost:3000` (or the port specified in your `.env` file).
 
 2. **Build for production:**
    ```bash
@@ -140,46 +140,21 @@ You can also access the raw Swagger JSON specification at:
 http://localhost:3000/swagger.json
 ```
 
-> **Note:** The Swagger documentation is implemented using swagger-jsdoc and swagger-ui-express. The API endpoints are documented using JSDoc comments in the route files, making it easy to keep the documentation in sync with the code.
+### API Endpoints
 
-## API Endpoints
+Below are screenshots of the Swagger UI documentation for the API:
 
-### Authentication
-- `POST /users/register` - Register a new user
-- `POST /users/login` - User login
+![Auth-and-Users](/server/images/auth-and-users.png)
 
-### User Management
-- `GET /users/profile` - Get authenticated user's profile
-- `PATCH /users/profile` - Update user profile
-- `POST /users/:userId/librarian` - Assign librarian role to user (Admin only)
-- `DELETE /users/:userId/librarian` - Remove librarian role from user (Admin only)
 
-### Library Management
-- `GET /libraries` - List all active libraries
-- `GET /libraries/:libraryId` - Get library details
-- `POST /libraries` - Create new library (Admin only)
-- `PATCH /libraries/:libraryId` - Update library details (Admin or assigned Librarian)
-- `DELETE /libraries/:libraryId` - Delete library (Admin only)
+![Libraries](/server/images/libraries.png)
 
-### Schedule Management
-- `GET /libraries/:libraryId/schedule` - Get library's regular weekly schedule
-- `POST /libraries/:libraryId/schedule` - Create library's regular weekly schedule (Admin/Librarian)
-- `PUT /libraries/:libraryId/schedule` - Update library's regular weekly schedule (Admin/Librarian)
-- `DELETE /libraries/:libraryId/schedule` - Delete library's regular weekly schedule (Admin/Librarian)
+![Seats](/server/images/seats.png)
 
-### Seat Management
-- `GET /libraries/:libraryId/seats` - List all seats in a library
-- `GET /libraries/:libraryId/seats/:seatId` - Get seat details
-- `POST /libraries/:libraryId/seats` - Create new seat in library (Admin/Librarian)
-- `PUT /libraries/:libraryId/seats/:seatId` - Update seat details (Admin/Librarian)
-- `DELETE /libraries/:libraryId/seats/:seatId` - Delete seat (Admin/Librarian)
+![Reservations](/server/images/reservations.png)
 
-### Reservation Management
-- `GET /users/me/reservations` - List user's reservations
-- `POST /users/me/reservations` - Create reservation
-- `DELETE /users/me/reservations/:id` - Cancel reservation
-- `GET /libraries/:libraryId/reservations` - List all reservations for a library (Admin/Librarian)
-- `GET /seats/:seatId/reservations` - List all reservations for a seat (Admin/Librarian)
+![Schedules](/server/images/schedules.png)
+
 
 ## Example API Usage
 
@@ -190,9 +165,9 @@ http://localhost:3000/swagger.json
 curl -X POST \
 -H "Content-Type: application/json" \
 -d '{
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "password": "securePassword123"
+"name": "John Doe",
+"email": "john.doe@example.com",
+"password": "securePassword123"
 }' \
 http://localhost:3000/users/register
 ```
@@ -200,11 +175,11 @@ http://localhost:3000/users/register
 **Response (201 Created):**
 ```json
 {
-  "message": "User registered successfully",
-  "user": {
-    "email": "john.doe@example.com",
-    "name": "John Doe"
-  }
+"message": "User registered successfully",
+"user": {
+"email": "john.doe@example.com",
+"name": "John Doe"
+}
 }
 ```
 
@@ -317,6 +292,8 @@ server/
 │   ├── repositories/   # Data access layer
 │   ├── validations/    # Input validation schemas
 │   ├── types/          # TypeScript type definitions
+│   ├── docs/           # API documentation
+│   │   └── swagger/    # Swagger documentation files
 │   ├── app.ts          # Express application setup
 │   └── server.ts       # Server entry point
 ├── test/
